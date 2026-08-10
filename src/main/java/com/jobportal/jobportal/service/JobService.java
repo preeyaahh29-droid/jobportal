@@ -55,4 +55,8 @@ public class JobService {
     public List<Job> searchByCompany(String company) {
         return jobRepository.findByCompanyContainingIgnoreCase(company);
     }
+
+    public List<Job> filterBySalary(Float minSalary) {
+    return jobRepository.findBySalaryGreaterThanEqual(minSalary);
+    }
 }
