@@ -41,19 +41,24 @@ public class JobController {
         jobService.deleteJob(id);
         return "Job deleted successfully";
     }
-
     @GetMapping("/search/title")
     public List<Job> searchByTitle(@RequestParam String title) {
-        return jobService.searchByTitle(title);
+    return jobService.searchByTitle(title);
     }
 
     @GetMapping("/search/location")
     public List<Job> searchByLocation(@RequestParam String location) {
-        return jobService.searchByLocation(location);
+    return jobService.searchByLocation(location);
     }
 
     @GetMapping("/search/company")
     public List<Job> searchByCompany(@RequestParam String company) {
-        return jobService.searchByCompany(company);
+    return jobService.searchByCompany(company);
     }
+
+    @GetMapping("/filter/salary")
+    public List<Job> filterBySalary(@RequestParam Float minSalary) {
+    return jobService.filterBySalary(minSalary);
+    }
+   
 }
