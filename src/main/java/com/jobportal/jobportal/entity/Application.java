@@ -1,5 +1,6 @@
 package com.jobportal.jobportal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,9 +14,11 @@ public class Application {
     private String applicantName;
     private String applicantEmail;
     private String resumeUrl;
+    private String status;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Job job;
 
     public Application() {
@@ -47,6 +50,14 @@ public class Application {
 
     public void setResumeUrl(String resumeUrl) {
         this.resumeUrl = resumeUrl;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Job getJob() {

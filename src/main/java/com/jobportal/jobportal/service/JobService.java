@@ -15,48 +15,61 @@ public class JobService {
         this.jobRepository = jobRepository;
     }
 
+    // Get all jobs
     public List<Job> getAllJobs() {
         return jobRepository.findAll();
     }
 
+    // Get job by ID
     public Job getJobById(Long id) {
-        return jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+        return jobRepository.findById(id).orElse(null);
     }
 
+    // Create job
     public Job createJob(Job job) {
         return jobRepository.save(job);
     }
 
-    public Job updateJob(Long id, Job job) {
-        Job existingJob = getJobById(id);
+    // Update job
+    public Job updateJob(Long id, Job jobDetails) {
 
-        existingJob.setTitle(job.getTitle());
-        existingJob.setCompany(job.getCompany());
-        existingJob.setLocation(job.getLocation());
-        existingJob.setSalary(job.getSalary());
-        existingJob.setDescription(job.getDescription());
+        Job job = jobRepository.findById(id).orElse(null);
 
-        return jobRepository.save(existingJob);
+        if (job == null) {
+            return null;
+        }
+
+        job.setTitle(jobDetails.getTitle());
+        job.setCompany(jobDetails.getCompany());
+        job.setLocation(jobDetails.getLocation());
+        job.setDescription(jobDetails.getDescription());
+        job.setSalary(jobDetails.getSalary());
+
+        return jobRepository.save(job);
     }
 
+    // Delete job
     public void deleteJob(Long id) {
         jobRepository.deleteById(id);
     }
 
+    // Search by title
     public List<Job> searchByTitle(String title) {
         return jobRepository.findByTitleContainingIgnoreCase(title);
     }
 
+    // Search by location
     public List<Job> searchByLocation(String location) {
         return jobRepository.findByLocationContainingIgnoreCase(location);
     }
 
+    // Search by company
     public List<Job> searchByCompany(String company) {
         return jobRepository.findByCompanyContainingIgnoreCase(company);
     }
 
+    // Filter by minimum salary
     public List<Job> filterBySalary(Float minSalary) {
-    return jobRepository.findBySalaryGreaterThanEqual(minSalary);
+        return jobRepository.findBySalaryGreaterThanEqual(minSalary);
     }
 }
