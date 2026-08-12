@@ -96,3 +96,7 @@ JobPortal
 │   └── application-workflow.png
 │
 └── README.md
+
+## 🔄 Application Workflow
+
+![Application Workflow](docs/application-workflow.png)
