@@ -2,8 +2,12 @@ package com.jobportal.jobportal.service;
 
 import com.jobportal.jobportal.entity.Application;
 import com.jobportal.jobportal.entity.Job;
+import com.jobportal.jobportal.entity.User;
+
 import com.jobportal.jobportal.repository.ApplicationRepository;
 import com.jobportal.jobportal.repository.JobRepository;
+import com.jobportal.jobportal.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,67 +21,171 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
+    private final UserRepository userRepository;
 
     private final Path uploadDirectory =
-            Paths.get("uploads/resumes").toAbsolutePath().normalize();
+            Paths.get("uploads/resumes")
+                    .toAbsolutePath()
+                    .normalize();
 
     public ApplicationService(
             ApplicationRepository applicationRepository,
-            JobRepository jobRepository) {
+            JobRepository jobRepository,
+            UserRepository userRepository) {
 
-        this.applicationRepository = applicationRepository;
-        this.jobRepository = jobRepository;
+        this.applicationRepository =
+                applicationRepository;
+
+        this.jobRepository =
+                jobRepository;
+
+        this.userRepository =
+                userRepository;
 
         try {
-            Files.createDirectories(uploadDirectory);
+
+            Files.createDirectories(
+                    uploadDirectory
+            );
+
         } catch (IOException e) {
-            throw new RuntimeException("Could not create resume upload directory", e);
+
+            throw new RuntimeException(
+                    "Could not create resume upload directory",
+                    e
+            );
         }
     }
 
-    // Apply for a job and upload resume
+    // =========================================================
+    // APPLY FOR JOB
+    // =========================================================
+
     public Application applyForJob(
-            Long jobId,
-            String applicantName,
             String applicantEmail,
+            Long jobId,
             MultipartFile resumeFile) {
 
-        Job job = jobRepository
-                .findById(jobId)
-                .orElse(null);
+        // =====================================================
+        // FIND APPLICANT FROM JWT EMAIL
+        // =====================================================
 
-        if (job == null) {
-            return null;
+        User applicant =
+                userRepository
+                        .findByEmail(applicantEmail)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "User not found."
+                                )
+                        );
+
+        if (!"JOB_SEEKER".equals(
+                applicant.getRole())) {
+
+            throw new IllegalArgumentException(
+                    "Only job seekers can apply for jobs."
+            );
         }
 
-        if (resumeFile == null || resumeFile.isEmpty()) {
-            throw new IllegalArgumentException("Resume file is required");
+        // =====================================================
+        // FIND JOB
+        // =====================================================
+
+        Job job =
+                jobRepository
+                        .findById(jobId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Job not found."
+                                )
+                        );
+
+
+        // Prevent duplicate applications
+        if (applicationRepository.existsByApplicantIdAndJobId(
+                applicant.getId(),
+                jobId)) {
+
+        throw new IllegalArgumentException(
+            "You have already applied for this job."
+        );
+        }
+
+        // =====================================================
+        // CHECK RESUME
+        // =====================================================
+
+        if (resumeFile == null ||
+                resumeFile.isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Resume file is required."
+            );
         }
 
         try {
-            String originalFileName = resumeFile.getOriginalFilename();
 
-            if (originalFileName == null || originalFileName.isBlank()) {
-                throw new IllegalArgumentException("Invalid resume file");
+            String originalFileName =
+                    resumeFile.getOriginalFilename();
+
+            if (originalFileName == null ||
+                    originalFileName.isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Invalid resume file."
+                );
             }
+
+            // =================================================
+            // ALLOWED FILE TYPES
+            // =================================================
 
             String extension = "";
 
-            int dotIndex = originalFileName.lastIndexOf(".");
+            int dotIndex =
+                    originalFileName.lastIndexOf(".");
 
             if (dotIndex >= 0) {
-                extension = originalFileName.substring(dotIndex);
+
+                extension =
+                        originalFileName
+                                .substring(dotIndex)
+                                .toLowerCase();
             }
+
+            if (!extension.equals(".pdf") &&
+                    !extension.equals(".doc") &&
+                    !extension.equals(".docx")) {
+
+                throw new IllegalArgumentException(
+                        "Only PDF, DOC and DOCX resumes are allowed."
+                );
+            }
+
+            // =================================================
+            // GENERATE SAFE FILE NAME
+            // =================================================
 
             String storedFileName =
-                    UUID.randomUUID() + extension;
+                    UUID.randomUUID() +
+                            extension;
 
             Path filePath =
-                    uploadDirectory.resolve(storedFileName).normalize();
+                    uploadDirectory
+                            .resolve(storedFileName)
+                            .normalize();
 
-            if (!filePath.startsWith(uploadDirectory)) {
-                throw new IllegalArgumentException("Invalid file path");
+            if (!filePath.startsWith(
+                    uploadDirectory)) {
+
+                throw new IllegalArgumentException(
+                        "Invalid file path."
+                );
             }
+
+            // =================================================
+            // SAVE RESUME
+            // =================================================
 
             Files.copy(
                     resumeFile.getInputStream(),
@@ -85,111 +193,364 @@ public class ApplicationService {
                     StandardCopyOption.REPLACE_EXISTING
             );
 
-            Application application = new Application();
+            // =================================================
+            // CREATE APPLICATION
+            // =================================================
 
-            application.setApplicantName(applicantName);
-            application.setApplicantEmail(applicantEmail);
+            Application application =
+                    new Application();
 
-            // Store the actual uploaded file name
-            application.setResumeUrl(storedFileName);
+            application.setApplicant(
+                    applicant
+            );
 
-            application.setStatus("APPLIED");
-            application.setJob(job);
+            application.setJob(
+                    job
+            );
 
-            return applicationRepository.save(application);
+            application.setResumeUrl(
+                    storedFileName
+            );
+
+            application.setStatus(
+                    "APPLIED"
+            );
+
+            return applicationRepository.save(
+                    application
+            );
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save resume", e);
+
+            throw new RuntimeException(
+                    "Failed to save resume.",
+                    e
+            );
         }
     }
 
-    // Get all applications
+    // =========================================================
+    // GET ALL APPLICATIONS
+    // =========================================================
+
     public List<Application> getAllApplications() {
+
         return applicationRepository.findAll();
     }
 
-    // Get applications by email
-    public List<Application> getApplicationsByEmail(String email) {
-        return applicationRepository.findByApplicantEmail(email);
+    // =========================================================
+    // GET APPLICATIONS BY EMAIL
+    // =========================================================
+
+    public List<Application> getApplicationsByEmail(
+            String email) {
+
+        return applicationRepository
+                .findByApplicantEmail(email);
     }
 
-    // Get applications by job
-    public List<Application> getApplicationsByJob(Long jobId) {
-        return applicationRepository.findByJobId(jobId);
-    }
+    // =========================================================
+    // GET APPLICATIONS BY JOB
+    // =========================================================
 
-    // Update application status
-    public Application updateStatus(Long id, String status) {
+    public List<Application> getApplicationsByJob(
+            Long jobId,
+            String recruiterEmail) {
 
-        Application application = applicationRepository
-                .findById(id)
-                .orElse(null);
+        Job job =
+                jobRepository
+                        .findById(jobId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Job not found."
+                                )
+                        );
 
-        if (application == null) {
-            return null;
-        }
 
-        status = status.toUpperCase();
+        User recruiter =
+                userRepository
+                        .findByEmail(recruiterEmail)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Recruiter not found."
+                                )
+                        );
 
-        if (!status.equals("APPLIED") &&
-                !status.equals("SHORTLISTED") &&
-                !status.equals("REJECTED")) {
+        if (!"RECRUITER".equals(
+                recruiter.getRole())) {
 
             throw new IllegalArgumentException(
-                    "Invalid status. Use APPLIED, SHORTLISTED or REJECTED."
+                    "Only recruiters can view applicants."
             );
         }
 
-        application.setStatus(status);
+        // =====================================================
+        // OWNERSHIP CHECK
+        // =====================================================
 
-        return applicationRepository.save(application);
+        if (job.getRecruiter() == null ||
+                !job.getRecruiter()
+                        .getId()
+                        .equals(recruiter.getId())) {
+
+            throw new IllegalArgumentException(
+                    "You are not authorized to view applicants for this job."
+            );
+        }
+
+        return applicationRepository
+                .findByJobId(jobId);
     }
 
-    // Delete application
-    public void deleteApplication(Long id) {
+    // =========================================================
+    // UPDATE APPLICATION STATUS
+    // =========================================================
 
-        Application application = applicationRepository
-                .findById(id)
-                .orElse(null);
+    public Application updateStatus(
+            Long id,
+            String status,
+            String recruiterEmail) {
 
-        if (application != null) {
+        Application application =
+                applicationRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Application not found."
+                                )
+                        );
 
-            // Delete uploaded resume
-            if (application.getResumeUrl() != null) {
+        // =====================================================
+        // FIND RECRUITER
+        // =====================================================
 
-                try {
-                    Path filePath =
-                            uploadDirectory
-                                    .resolve(application.getResumeUrl())
-                                    .normalize();
+        User recruiter =
+                userRepository
+                        .findByEmail(recruiterEmail)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Recruiter not found."
+                                )
+                        );
 
-                    if (filePath.startsWith(uploadDirectory)) {
-                        Files.deleteIfExists(filePath);
-                    }
+        if (!"RECRUITER".equals(
+                recruiter.getRole())) {
 
-                } catch (IOException e) {
-                    System.out.println(
-                            "Could not delete resume file: "
-                                    + e.getMessage()
-                    );
-                }
+            throw new IllegalArgumentException(
+                    "Only recruiters can update application status."
+            );
+        }
+
+        // =====================================================
+        // VERIFY JOB OWNERSHIP
+        // =====================================================
+
+        Job job = application.getJob();
+
+        if (job == null ||
+                job.getRecruiter() == null ||
+                !job.getRecruiter()
+                        .getId()
+                        .equals(recruiter.getId())) {
+
+            throw new IllegalArgumentException(
+                    "You are not authorized to update this application."
+            );
+        }
+
+
+
+        // =====================================================
+        // VALIDATE STATUS
+        // =====================================================
+
+        if (status == null ||
+                status.trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Status is required."
+            );
+        }
+
+        status =
+                status
+                        .trim()
+                        .toUpperCase()
+                        .replace(" ", "_");
+
+        if (!status.equals("APPLIED") &&
+                !status.equals("VIEWED") &&
+                !status.equals("SHORTLISTED") &&
+                !status.equals("INTERVIEW") &&
+                !status.equals("SELECTED") &&
+                !status.equals("REJECTED")) {
+
+            throw new IllegalArgumentException(
+                    "Invalid status. Use APPLIED, VIEWED, " +
+                    "SHORTLISTED, INTERVIEW, SELECTED or REJECTED."
+            );
+        }
+
+        // =====================================================
+// PREVENT INVALID STATUS CHANGES
+// =====================================================
+
+String currentStatus = application.getStatus();
+
+if (currentStatus == null) {
+    currentStatus = "APPLIED";
+}
+
+// Once rejected or selected, application is finalized
+if (currentStatus.equals("REJECTED") ||
+        currentStatus.equals("SELECTED")) {
+
+    throw new IllegalArgumentException(
+            "This application is already finalized and cannot be changed."
+    );
+}
+
+// Prevent moving backwards
+if (currentStatus.equals("APPLIED") &&
+        !(status.equals("VIEWED") ||
+                status.equals("SHORTLISTED") ||
+                status.equals("INTERVIEW") ||
+                status.equals("SELECTED") ||
+                status.equals("REJECTED"))) {
+
+    throw new IllegalArgumentException(
+            "Invalid status transition from APPLIED."
+    );
+}
+
+if (currentStatus.equals("VIEWED") &&
+        status.equals("APPLIED")) {
+
+    throw new IllegalArgumentException(
+            "Application status cannot move backwards."
+    );
+}
+
+if (currentStatus.equals("SHORTLISTED") &&
+        (status.equals("APPLIED") ||
+                status.equals("VIEWED"))) {
+
+    throw new IllegalArgumentException(
+            "Application status cannot move backwards."
+    );
+}
+
+if (currentStatus.equals("INTERVIEW") &&
+        (status.equals("APPLIED") ||
+                status.equals("VIEWED") ||
+                status.equals("SHORTLISTED"))) {
+
+    throw new IllegalArgumentException(
+            "Application status cannot move backwards."
+    );
+}
+
+application.setStatus(status);
+
+return applicationRepository.save(
+        application
+);
             }
 
-            applicationRepository.deleteById(id);
+    // =========================================================
+    // DELETE / WITHDRAW APPLICATION
+    // =========================================================
+
+    public void deleteApplication(
+            Long id,
+            String applicantEmail) {
+
+        Application application =
+                applicationRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Application not found."
+                                )
+                        );
+
+        // =====================================================
+        // VERIFY OWNER
+        // =====================================================
+
+        if (application.getApplicant() == null ||
+                !application
+                        .getApplicant()
+                        .getEmail()
+                        .equalsIgnoreCase(
+                                applicantEmail
+                        )) {
+
+            throw new IllegalArgumentException(
+                    "You are not authorized to withdraw this application."
+            );
         }
+
+        // =====================================================
+        // DELETE RESUME
+        // =====================================================
+
+        if (application.getResumeUrl() != null) {
+
+            try {
+
+                Path filePath =
+                        uploadDirectory
+                                .resolve(
+                                        application
+                                                .getResumeUrl()
+                                )
+                                .normalize();
+
+                if (filePath.startsWith(
+                        uploadDirectory)) {
+
+                    Files.deleteIfExists(
+                            filePath
+                    );
+                }
+
+            } catch (IOException e) {
+
+                System.out.println(
+                        "Could not delete resume file: "
+                                + e.getMessage()
+                );
+            }
+        }
+
+        applicationRepository.delete(
+                application
+        );
     }
 
-    // Get resume file
-    public Path getResumeFile(String fileName) {
+    // =========================================================
+    // GET RESUME FILE
+    // =========================================================
+
+    public Path getResumeFile(
+            String fileName) {
 
         Path filePath =
-                uploadDirectory.resolve(fileName).normalize();
+                uploadDirectory
+                        .resolve(fileName)
+                        .normalize();
 
-        if (!filePath.startsWith(uploadDirectory)) {
-            throw new IllegalArgumentException("Invalid file name");
+        if (!filePath.startsWith(
+                uploadDirectory)) {
+
+            throw new IllegalArgumentException(
+                    "Invalid file name."
+            );
         }
 
         if (!Files.exists(filePath)) {
+
             return null;
         }
 

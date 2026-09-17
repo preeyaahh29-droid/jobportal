@@ -2,11 +2,15 @@ package com.jobportal.jobportal.controller;
 
 import com.jobportal.jobportal.entity.Application;
 import com.jobportal.jobportal.service.ApplicationService;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.core.Authentication;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,52 +25,158 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    public ApplicationController(ApplicationService applicationService) {
+    public ApplicationController(
+            ApplicationService applicationService) {
+
         this.applicationService = applicationService;
     }
 
-    // Apply for a job with resume
+    // =========================================================
+    // APPLY FOR JOB
+    // =========================================================
+
     @PostMapping(
             value = "/job/{jobId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public Application applyForJob(
+    public ResponseEntity<?> applyForJob(
             @PathVariable Long jobId,
-            @RequestParam("applicantName") String applicantName,
-            @RequestParam("applicantEmail") String applicantEmail,
-            @RequestParam("resume") MultipartFile resume) {
+            @RequestParam("resume") MultipartFile resume,
+            Authentication authentication) {
 
-        return applicationService.applyForJob(
-                jobId,
-                applicantName,
-                applicantEmail,
-                resume
+        try {
+
+            String email = authentication.getName();
+
+            Application application =
+                    applicationService.applyForJob(
+                            email,
+                            jobId,
+                            resume
+                    );
+
+            return ResponseEntity.ok(application);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Failed to submit application."
+                    );
+        }
+    }
+
+    // =========================================================
+    // GET ALL APPLICATIONS
+    // =========================================================
+
+    @GetMapping
+    public ResponseEntity<?> getAllApplications() {
+
+        return ResponseEntity.ok(
+                applicationService.getAllApplications()
         );
     }
 
-    // Get all applications
-    @GetMapping
-    public List<Application> getAllApplications() {
-        return applicationService.getAllApplications();
-    }
+    // =========================================================
+    // GET MY APPLICATIONS
+    // =========================================================
 
-    // Get applications by email
     @GetMapping("/email/{email}")
-    public List<Application> getApplicationsByEmail(
-            @PathVariable String email) {
+    public ResponseEntity<?> getApplicationsByEmail(
+            @PathVariable String email,
+            Authentication authentication) {
 
-        return applicationService.getApplicationsByEmail(email);
+        try {
+
+            String loggedInEmail =
+                    authentication.getName();
+
+            // Prevent one user from viewing
+            // another user's applications
+            if (!loggedInEmail.equalsIgnoreCase(email)) {
+
+                return ResponseEntity
+                        .status(403)
+                        .body(
+                                "You are not authorized to view these applications."
+                        );
+            }
+
+            List<Application> applications =
+                    applicationService
+                            .getApplicationsByEmail(
+                                    loggedInEmail
+                            );
+
+            return ResponseEntity.ok(applications);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Unable to load applications."
+                    );
+        }
     }
 
-    // Get applications for a specific job
+    // =========================================================
+    // GET APPLICATIONS FOR JOB
+    // =========================================================
+
     @GetMapping("/job/{jobId}")
-    public List<Application> getApplicationsByJob(
-            @PathVariable Long jobId) {
+    public ResponseEntity<?> getApplicationsByJob(
+            @PathVariable Long jobId,
+            Authentication authentication) {
 
-        return applicationService.getApplicationsByJob(jobId);
+        try {
+
+            String recruiterEmail =
+                    authentication.getName();
+
+            List<Application> applications =
+                    applicationService
+                            .getApplicationsByJob(
+                                    jobId,
+                                    recruiterEmail
+                            );
+
+            return ResponseEntity.ok(applications);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .status(403)
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Unable to load applicants."
+                    );
+        }
     }
 
-    // View / open resume
+    // =========================================================
+    // VIEW RESUME
+    // =========================================================
+
     @GetMapping("/resume/{fileName:.+}")
     public ResponseEntity<Resource> viewResume(
             @PathVariable String fileName) {
@@ -74,35 +184,49 @@ public class ApplicationController {
         try {
 
             Path filePath =
-                    applicationService.getResumeFile(fileName);
+                    applicationService
+                            .getResumeFile(fileName);
 
             if (filePath == null) {
-                return ResponseEntity.notFound().build();
+
+                return ResponseEntity
+                        .notFound()
+                        .build();
             }
 
             Resource resource =
-                    new UrlResource(filePath.toUri());
+                    new UrlResource(
+                            filePath.toUri()
+                    );
 
             String contentType =
                     Files.probeContentType(filePath);
 
             if (contentType == null) {
-                contentType = "application/octet-stream";
+
+                contentType =
+                        "application/octet-stream";
             }
 
-            return ResponseEntity.ok()
+            return ResponseEntity
+                    .ok()
                     .contentType(
-                            MediaType.parseMediaType(contentType)
+                            MediaType.parseMediaType(
+                                    contentType
+                            )
                     )
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" +
-                                    filePath.getFileName() +
+                                    filePath
+                                            .getFileName() +
                                     "\""
                     )
                     .body(resource);
 
         } catch (Exception e) {
+
+            e.printStackTrace();
 
             return ResponseEntity
                     .internalServerError()
@@ -110,22 +234,88 @@ public class ApplicationController {
         }
     }
 
-    // Update application status
-    @PutMapping("/{id}/status")
-    public Application updateStatus(
-            @PathVariable Long id,
-            @RequestParam String status) {
+    // =========================================================
+    // UPDATE APPLICATION STATUS
+    // =========================================================
 
-        return applicationService.updateStatus(id, status);
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            Authentication authentication) {
+
+        try {
+
+            String recruiterEmail =
+                    authentication.getName();
+
+            Application updatedApplication =
+                    applicationService.updateStatus(
+                            id,
+                            status,
+                            recruiterEmail
+                    );
+
+            return ResponseEntity.ok(
+                    updatedApplication
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Unable to update application status."
+                    );
+        }
     }
 
-    // Delete application
+    // =========================================================
+    // DELETE / WITHDRAW APPLICATION
+    // =========================================================
+
     @DeleteMapping("/{id}")
-    public String deleteApplication(
-            @PathVariable Long id) {
+    public ResponseEntity<?> deleteApplication(
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        applicationService.deleteApplication(id);
+        try {
 
-        return "Application deleted successfully";
+            String email =
+                    authentication.getName();
+
+            applicationService.deleteApplication(
+                    id,
+                    email
+            );
+
+            return ResponseEntity.ok(
+                    "Application deleted successfully."
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .status(403)
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Unable to delete application."
+                    );
+        }
     }
 }
