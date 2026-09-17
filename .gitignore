@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Application configuration containing local credentials
+src/main/resources/application.properties
+
+# Uploaded resumes/files
+uploads/

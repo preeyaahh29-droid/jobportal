@@ -8,9 +8,12 @@ import java.util.List;
 public interface ApplicationRepository
         extends JpaRepository<Application, Long> {
 
-    List<Application> findByApplicantEmail(
-            String applicantEmail
-    );
+    List<Application> findByApplicantEmail(String applicantEmail);
 
     List<Application> findByJobId(Long jobId);
+
+    boolean existsByApplicantIdAndJobId(
+            Long applicantId,
+            Long jobId
+    );
 }

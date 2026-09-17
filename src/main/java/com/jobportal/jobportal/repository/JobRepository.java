@@ -2,6 +2,7 @@ package com.jobportal.jobportal.repository;
 
 import com.jobportal.jobportal.entity.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Long> {
@@ -12,5 +13,13 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     List<Job> findByCompanyContainingIgnoreCase(String company);
 
-    List<Job> findBySalaryGreaterThanEqual(Float minSalary);
+    List<Job> findBySalaryGreaterThanEqual(Double minSalary);
+
+    // Recruiter ownership
+    List<Job> findByRecruiterId(Long recruiterId);
+
+    boolean existsByIdAndRecruiterId(
+            Long jobId,
+            Long recruiterId
+    );
 }

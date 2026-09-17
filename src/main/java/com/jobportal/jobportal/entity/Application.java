@@ -11,14 +11,27 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String applicantName;
-    private String applicantEmail;
     private String resumeUrl;
+
     private String status;
 
+    // Many applications can belong to one applicant
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({
+            "password",
+            "hibernateLazyInitializer",
+            "handler"
+    })
+    private User applicant;
+
+    // Many applications can belong to one job
     @ManyToOne
     @JoinColumn(name = "job_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({
+            "hibernateLazyInitializer",
+            "handler"
+    })
     private Job job;
 
     public Application() {
@@ -26,22 +39,6 @@ public class Application {
 
     public Long getId() {
         return id;
-    }
-
-    public String getApplicantName() {
-        return applicantName;
-    }
-
-    public void setApplicantName(String applicantName) {
-        this.applicantName = applicantName;
-    }
-
-    public String getApplicantEmail() {
-        return applicantEmail;
-    }
-
-    public void setApplicantEmail(String applicantEmail) {
-        this.applicantEmail = applicantEmail;
     }
 
     public String getResumeUrl() {
@@ -58,6 +55,14 @@ public class Application {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public User getApplicant() {
+        return applicant;
+    }
+
+    public void setApplicant(User applicant) {
+        this.applicant = applicant;
     }
 
     public Job getJob() {
