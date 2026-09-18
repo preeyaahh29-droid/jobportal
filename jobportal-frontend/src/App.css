@@ -1,0 +1,1067 @@
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background: #f5f7fb;
+  color: #172033;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+a {
+  text-decoration: none;
+}
+
+/* =========================================================
+   MAIN APP
+   ========================================================= */
+
+.app {
+  min-height: 100vh;
+}
+
+/* =========================================================
+   LOGIN / REGISTER PAGE
+   ========================================================= */
+
+.container {
+  width: 100%;
+  max-width: 440px;
+  margin: 60px auto;
+  padding: 36px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo h1 {
+  margin: 0;
+  color: #4f46e5;
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.logo p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* =========================================================
+   LOGIN / REGISTER TABS
+   ========================================================= */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 26px;
+  background: #f1f5f9;
+  border-radius: 11px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tabs button:hover {
+  color: #4f46e5;
+}
+
+.tabs button.active {
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+form {
+  width: 100%;
+}
+
+form h2 {
+  margin: 0 0 22px;
+  color: #172033;
+  font-size: 23px;
+}
+
+label {
+  display: block;
+  margin: 15px 0 7px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d5dbe5;
+  border-radius: 9px;
+  outline: none;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: #a5b4fc;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+/* =========================================================
+   FILE INPUT
+   ========================================================= */
+
+input[type="file"] {
+  padding: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 9px 13px;
+  border: none;
+  border-radius: 7px;
+  background: #4f46e5;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: #4338ca;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.submit-btn,
+.apply-btn,
+.refresh-btn,
+.logout-btn,
+.withdraw-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Primary */
+
+.submit-btn {
+  width: 100%;
+  margin-top: 18px;
+  background: #4f46e5;
+  color: white;
+}
+
+.submit-btn:hover {
+  background: #4338ca;
+  box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2);
+}
+
+/* Apply */
+
+.apply-btn {
+  margin-top: 14px;
+  background: #16a34a;
+  color: white;
+}
+
+.apply-btn:hover {
+  background: #15803d;
+  box-shadow: 0 5px 12px rgba(22, 163, 74, 0.2);
+}
+
+.apply-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Refresh */
+
+.refresh-btn {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.refresh-btn:hover {
+  background: #e0e7ff;
+}
+
+/* Logout / Delete */
+
+.logout-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+  box-shadow: 0 5px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Withdraw */
+
+.withdraw-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  background: #ef4444;
+  color: white;
+}
+
+.withdraw-btn:hover {
+  background: #dc2626;
+}
+
+/* =========================================================
+   LOGIN / REGISTER MESSAGE
+   ========================================================= */
+
+.message {
+  margin: 15px 0;
+  padding: 13px 15px;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* =========================================================
+   LOGIN / REGISTER SWITCH
+   ========================================================= */
+
+.switch-text {
+  margin: 22px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.switch-text span {
+  margin-left: 5px;
+  color: #4f46e5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch-text span:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.dashboard {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* =========================================================
+   DASHBOARD HEADER
+   ========================================================= */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 25px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: #4f46e5;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.dashboard-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* =========================================================
+   WELCOME / HERO
+   ========================================================= */
+
+.welcome-section {
+  margin-top: 20px;
+  padding: 40px 35px;
+  border: 1px solid #dfe5ff;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    #eef2ff 0%,
+    #f8fafc 60%,
+    #ffffff 100%
+  );
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.welcome-section h2 {
+  margin: 0 0 10px;
+  color: #1e1b4b;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.welcome-section p {
+  margin: 0;
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* =========================================================
+   GENERAL SECTIONS
+   ========================================================= */
+
+.jobs-section,
+.applications-section {
+  margin-top: 20px;
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.jobs-section h2,
+.applications-section h2 {
+  margin-top: 0;
+  color: #172033;
+  font-size: 21px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* =========================================================
+   RESUME SECTION
+   ========================================================= */
+
+.resume-section {
+  border-color: #dbe2ff;
+  background: linear-gradient(
+    135deg,
+    #fafbff,
+    #ffffff
+  );
+}
+
+.resume-section p {
+  color: #64748b;
+}
+
+.resume-selected {
+  margin-top: 15px !important;
+  padding: 12px 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
+  background: #ecfdf5;
+  color: #166534 !important;
+}
+
+.resume-selected strong {
+  color: #15803d;
+}
+
+/* =========================================================
+   JOB SEARCH & FILTERS
+   ========================================================= */
+
+.job-filters {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr auto;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.job-filters input {
+  padding: 13px 14px;
+}
+
+.filter-result {
+  margin: 10px 0 20px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* =========================================================
+   JOB GRID
+   ========================================================= */
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  );
+  gap: 20px;
+}
+
+/* =========================================================
+   JOB CARD
+   ========================================================= */
+
+.job-card {
+  position: relative;
+  padding: 23px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+  transition: all 0.25s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-4px);
+  border-color: #c7d2fe;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.09);
+}
+
+.job-card h3 {
+  margin: 0 0 16px;
+  color: #312e81;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.job-card p {
+  margin: 9px 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.job-card strong {
+  color: #334155;
+}
+
+.job-card .submit-btn {
+  display: inline-block;
+  width: auto;
+  margin-top: 15px;
+  margin-right: 8px;
+}
+
+.job-card .logout-btn {
+  margin-top: 15px;
+  margin-right: 8px;
+}
+
+.job-card .apply-btn {
+  display: inline-block;
+}
+
+/* =========================================================
+   APPLICATION GRID
+   ========================================================= */
+
+.applications-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  );
+  gap: 20px;
+}
+
+/* =========================================================
+   APPLICATION CARD
+   ========================================================= */
+
+.application-card {
+  padding: 21px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.application-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+}
+
+.application-card h3 {
+  margin: 0 0 15px;
+  color: #312e81;
+  font-size: 19px;
+}
+
+.application-card p {
+  margin: 9px 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.application-card strong {
+  color: #334155;
+}
+
+/* =========================================================
+   RESUME LINK
+   ========================================================= */
+
+.application-card a {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: #2563eb;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.application-card a:hover {
+  background: #1d4ed8;
+}
+
+/* =========================================================
+   APPLICATION STATUS
+   ========================================================= */
+
+.application-status {
+  display: inline-block;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   APPLICATION ACTIONS
+   ========================================================= */
+
+.application-actions {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.status-btn {
+  flex: 1;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.status-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.applied-btn {
+  background: #2563eb;
+}
+
+.shortlist-btn {
+  background: #16a34a;
+}
+
+.reject-btn {
+  background: #dc2626;
+}
+
+/* =========================================================
+   STATUS / EMPTY STATE
+   ========================================================= */
+
+.status-text {
+  margin: 0;
+  padding: 28px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* =========================================================
+   MOBILE - TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .job-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .job-filters button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .dashboard {
+    padding: 12px;
+  }
+
+  .container {
+    margin: 30px auto;
+    padding: 25px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .dashboard-header .logout-btn {
+    width: 100%;
+  }
+
+  .welcome-section {
+    padding: 30px 22px;
+  }
+
+  .welcome-section h2 {
+    font-size: 24px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header button {
+    width: 100%;
+  }
+
+  .job-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .job-filters button {
+    width: 100%;
+  }
+
+  .jobs-section,
+  .applications-section {
+    padding: 20px;
+  }
+
+  .jobs-grid,
+  .applications-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .application-actions {
+    flex-direction: column;
+  }
+
+  .status-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .container {
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .logo h1 {
+    font-size: 30px;
+  }
+
+  .dashboard {
+    padding: 8px;
+  }
+
+  .dashboard-header {
+    padding: 18px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .welcome-section {
+    padding: 25px 18px;
+  }
+
+  .welcome-section h2 {
+    font-size: 22px;
+  }
+
+  .jobs-section,
+  .applications-section {
+    padding: 17px;
+  }
+
+  .job-card,
+  .application-card {
+    padding: 17px;
+  }
+
+  .job-card h3 {
+    font-size: 19px;
+  }
+
+  .submit-btn,
+  .apply-btn,
+  .refresh-btn,
+  .logout-btn,
+  .withdraw-btn {
+    font-size: 13px;
+  }
+}
+/* =========================================================
+   APPLICATION STATUS TRACKER
+   ========================================================= */
+
+.application-tracker {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.tracker-header h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.tracker-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.current-status-badge {
+  padding: 8px 13px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Timeline */
+
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  gap: 5px;
+}
+
+.timeline-item {
+  flex: 1;
+  position: relative;
+  text-align: center;
+}
+
+.timeline-dot {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 9px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f1f5f9;
+  color: #94a3b8;
+
+  border: 2px solid #e2e8f0;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-item.completed .timeline-dot {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.timeline-item.current .timeline-dot {
+  background: #dbeafe;
+  color: #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px #eff6ff;
+}
+
+.timeline-content strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.timeline-content span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.timeline-item.completed
+.timeline-content span {
+  color: #15803d;
+}
+
+.timeline-item.current
+.timeline-content span {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Connecting line */
+
+.timeline-line {
+  position: absolute;
+
+  height: 3px;
+
+  background: #e2e8f0;
+
+  top: 18px;
+
+  left: calc(50% + 20px);
+
+  width: calc(100% - 40px);
+
+  z-index: 1;
+}
+
+.timeline-line.completed-line {
+  background: #86efac;
+}
+
+/* Footer */
+
+.tracker-footer {
+  margin-top: 22px;
+  padding-top: 14px;
+
+  border-top: 1px solid #e2e8f0;
+
+  font-size: 14px;
+  color: #64748b;
+}
+
+.tracker-footer strong {
+  color: #1e293b;
+}
+
+/* Rejected */
+
+.rejected-tracker {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.rejected-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px;
+
+  margin-bottom: 20px;
+
+  border-radius: 10px;
+
+  background: #fef2f2;
+}
+
+.status-icon {
+  font-size: 25px;
+}
+
+.rejected-status strong {
+  color: #b91c1c;
+}
+
+.rejected-status p {
+  margin: 4px 0 0;
+
+  color: #7f1d1d;
+
+  font-size: 13px;
+}
+
+.timeline-item.rejected .timeline-dot {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.timeline-item.rejected
+.timeline-content strong {
+  color: #b91c1c;
+}
+
+.timeline-item.rejected
+.timeline-content span {
+  color: #dc2626;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+  .tracker-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+  }
+
+  .timeline-dot {
+    margin: 0 12px 0 0;
+    flex-shrink: 0;
+  }
+
+  .timeline-content {
+    flex: 1;
+  }
+
+  .timeline-line {
+    display: none;
+  }
+
+}
