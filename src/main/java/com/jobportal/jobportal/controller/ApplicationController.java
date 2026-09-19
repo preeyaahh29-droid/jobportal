@@ -179,13 +179,20 @@ public class ApplicationController {
 
     @GetMapping("/resume/{fileName:.+}")
     public ResponseEntity<Resource> viewResume(
-            @PathVariable String fileName) {
+            @PathVariable String fileName,
+            Authentication authentication) {
 
         try {
 
+            String requesterEmail =
+                    authentication.getName();
+
             Path filePath =
                     applicationService
-                            .getResumeFile(fileName);
+                            .getResumeFile(
+                                    fileName,
+                                    requesterEmail
+                            );
 
             if (filePath == null) {
 
@@ -223,6 +230,12 @@ public class ApplicationController {
                                     "\""
                     )
                     .body(resource);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .status(403)
+                    .build();
 
         } catch (Exception e) {
 

@@ -173,11 +173,12 @@ public class SecurityConfig {
                                 HttpMethod.PUT,
                                 "/api/applications/*/status"
                         ).hasRole("RECRUITER")
-                        // Resume viewing
+
+                        // Resume viewing requires authentication
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/applications/resume/**"
-                        ).permitAll()
+                        ).authenticated()
 
                         // Recruiter can see all applications
                         .requestMatchers(
