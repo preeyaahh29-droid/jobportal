@@ -530,30 +530,58 @@ return applicationRepository.save(
     }
 
     // =========================================================
-    // GET RESUME FILE
-    // =========================================================
+// GET RESUME FILE
+// =========================================================
 
-    public Path getResumeFile(
-            String fileName) {
+public Path getResumeFile(
+        String fileName,
+        String requesterEmail) {
 
-        Path filePath =
-                uploadDirectory
-                        .resolve(fileName)
-                        .normalize();
+    Application application =
+            applicationRepository
+                    .findByResumeUrl(fileName)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Resume not found."
+                            )
+                    );
 
-        if (!filePath.startsWith(
-                uploadDirectory)) {
+    boolean isApplicant =
+            application.getApplicant() != null &&
+            application.getApplicant()
+                    .getEmail()
+                    .equalsIgnoreCase(requesterEmail);
 
-            throw new IllegalArgumentException(
-                    "Invalid file name."
-            );
-        }
+    boolean isRecruiter =
+            application.getJob() != null &&
+            application.getJob().getRecruiter() != null &&
+            application.getJob().getRecruiter()
+                    .getEmail()
+                    .equalsIgnoreCase(requesterEmail);
 
-        if (!Files.exists(filePath)) {
+    if (!isApplicant && !isRecruiter) {
 
-            return null;
-        }
-
-        return filePath;
+        throw new IllegalArgumentException(
+                "You are not authorized to view this resume."
+        );
     }
+
+    Path filePath =
+            uploadDirectory
+                    .resolve(fileName)
+                    .normalize();
+
+    if (!filePath.startsWith(uploadDirectory)) {
+
+        throw new IllegalArgumentException(
+                "Invalid file name."
+        );
+    }
+
+    if (!Files.exists(filePath)) {
+        return null;
+    }
+
+    return filePath;
+}
 }
