@@ -1,355 +1,413 @@
-# 💼 JobPortal – Online Job Portal
+# Job Portal with Employer Dashboard
 
-## 📌 Project Overview
+A full-stack job portal application built with **Spring Boot, React, PostgreSQL, and JWT authentication**.
 
-JobPortal is a web-based job portal application that connects job seekers with recruiters.
+The system supports separate workflows for **Job Seekers** and **Recruiters**, including job management, applications, resume uploads, application-status tracking, and employer profiles.
 
-Job seekers can register, login, search for jobs, upload resumes, apply for jobs, and track their application status.
+## Live Application
 
-Recruiters can register, login, post jobs, edit jobs, delete jobs, view applicants, and update application status.
+**Frontend:**
+https://jobportal-frontend-4iox.onrender.com
 
----
+**Backend API:**
+https://jobportal-6ib1.onrender.com
 
-## 🎯 Objectives
+**Swagger UI:**
+https://jobportal-6ib1.onrender.com/swagger-ui/index.html
 
-- Provide an easy-to-use online job searching platform
-- Allow recruiters to post and manage job opportunities
-- Allow job seekers to search and apply for jobs
-- Allow job seekers to upload resumes
-- Allow recruiters to view applicant details and resumes
-- Track application status
+**OpenAPI JSON:**
+https://jobportal-6ib1.onrender.com/v3/api-docs
 
----
+## Features
 
-## 🚀 Features
+### Job Seeker
 
-### 👨‍💻 Job Seeker
+- Register and log in using JWT authentication
+- View available jobs
+- Search and filter jobs
+- View job details
+- Apply for jobs
+- Upload resumes in PDF, DOC, and DOCX formats
+- Prevent duplicate applications
+- View submitted applications
+- Withdraw applications
+- Access uploaded resumes securely
+- Manage job-seeker profile
 
-- Register and Login
-- Upload Resume
-- Search Jobs
-- Filter Jobs by Location
-- Filter Jobs by Minimum Salary
-- View Job Details
-- Apply for Jobs
-- View My Applications
-- Track Application Status
-- Withdraw Applications
+### Recruiter
 
-### 👨‍💼 Recruiter
+- Register and log in using JWT authentication
+- Create jobs
+- Update jobs
+- Delete jobs
+- View recruiter-owned jobs
+- View applicants for owned jobs
+- Update application status
+- Access applicant resumes securely
+- Create and update employer profile
 
-- Register and Login
-- Post New Jobs
-- Edit Job Postings
-- Delete Job Postings
-- View Job Applicants
-- View Applicant Resume
-- Update Application Status
-  - APPLIED
-  - SHORTLISTED
-  - REJECTED
+### Application Status
 
----
+Supported application stages:
 
-## 🛠️ Technologies Used
+```text
+APPLIED
+VIEWED
+SHORTLISTED
+INTERVIEW
+SELECTED
+REJECTED
 
-### Frontend
+### Security
 
-- React.js
-- JavaScript
-- HTML
-- CSS
+JWT-based authentication
+Spring Security authorization
+Role-based access control
+JOB_SEEKER and RECRUITER roles
+BCrypt password hashing
+Protected resume access
+Recruiter ownership checks
+CORS configuration for the deployed frontend
+Database credentials and JWT secrets kept outside source control
+
+## Technology Stack
 
 ### Backend
 
-- Java
-- Spring Boot
-- Spring Data JPA
-- Spring Security
-- JWT Authentication
-- REST API
+Java 21
+Spring Boot 4.1.0
+Spring Web
+Spring Data JPA
+Spring Security
+PostgreSQL
+JWT
+Bean Validation
+Maven
 
-### Database
+### Frontend
 
-- PostgreSQL
+React
+Vite
+JavaScript
+HTML
+CSS
 
-### Tools
+### Development & Deployment
 
-- Visual Studio Code
-- Git
-- GitHub
-- Maven
+Git
+GitHub
+GitHub Actions
+Docker
+Render
+PostgreSQL
 
----
-
-## 🏗️ Project Structure
-
-```text
-JobPortal
+## Project Structure
+jobportal/
 │
-├── jobportal
-│   └── Spring Boot Backend
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 │
-├── jobportal-frontend
-│   └── React Frontend
-│
-├── docs
-│   ├── diagrams
-│   │   ├── architecture-diagram.png
-│   │   ├── er-diagram.png
-│   │   └── class-diagram.png
-│   │
+├── docs/
+│   ├── application-workflow.png
 │   └── Problem_Statement.md
 │
-├── README.md
-├── .gitignore
-├── LICENSE
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/jobportal/jobportal/
+│   │   │       ├── entity/
+│   │   │       ├── repository/
+│   │   │       ├── service/
+│   │   │       ├── security/
+│   │   │       └── controllers/
+│   │   │
+│   │   └── resources/
+│   │       └── application.properties
+│   │
+│   └── test/
+│       └── java/
+│           └── com/jobportal/jobportal/
+│               ├── JobportalApplicationTests.java
+│               └── service/
+│                   └── ApplicationServiceTest.java
+│
+├── jobportal-frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   └── ...
+│   ├── package.json
+│   └── vite.config.js
+│
+├── .dockerignore
 ├── .env.example
-└── CHANGELOG.md
+├── .gitignore
+├── CHANGELOG.md
+├── Dockerfile
+├── LICENSE
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── README.md
 
-```
+## Database Relationships
 
-##🏛️ System Architecture
-
-The application follows a three-layer web architecture:
-
-Frontend: React.js application
-Backend: Spring Boot REST API
-Database: PostgreSQL
-
-The frontend communicates with the backend through REST APIs. The backend handles authentication, business logic, and database operations.
-
-### Architecture Diagram
-
-![Architecture Diagram](docs/diagrams/architecture-diagram.png)
-
-##🗃️ Database Design
-
-The main entities of the JobPortal application are:
+The application uses PostgreSQL with the following core relationships:
 
 User
+ ├── 1:N → Job
+ └── 1:N → Application
+
 Job
+ └── 1:N → Application
+
 Application
-Job Seeker Profile
+ ├── N:1 → User
+ └── N:1 → Job
 
-Users can act as job seekers or recruiters.
+Additional profile entities are used for:
 
-Recruiters can create job postings, while job seekers can apply for jobs. Applications connect job seekers with jobs and contain application status information.
+User → JobSeekerProfile
+User → EmployerProfile
 
-### ER Diagram
+## Local Setup
 
-![ER Diagram](docs/diagrams/er-diagram.png)
+### Prerequisites
 
-##📦 Class Design
+Install:
 
-The backend uses Java classes and Spring Boot components to implement the application.
+Java 21
+PostgreSQL
+Node.js and npm
+Git
 
-The main classes represent:
+### Clone the repository
 
-User
-Job
-Application
-Job Seeker Profile
-Controllers
-Services
-Repositories
-Security components
-
-### Class Diagram
-
-![Class Diagram](docs/diagrams/class-diagram.png)
-
-
-##🔄 Application Workflow
-
-Job Seeker Workflow
-
-###Register
-   ↓
-Login
-   ↓
-Search Jobs
-   ↓
-View Job Details
-   ↓
-Apply for Job
-   ↓
-Track Application Status
-   ↓
-Withdraw Application (if required)
-
-
-###Recruiter Workflow
-
-Register
-   ↓
-Login
-   ↓
-Post Job
-   ↓
-Manage Job
-   ↓
-View Applicants
-   ↓
-Update Application Status
-
-
-##▶️ How to Run the Project
-
-1. Clone the Repository
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-
-Navigate into the project:
-
-cd JobPortal
-
-2. Run the Backend
-
-Open a terminal and navigate to the backend folder:
-
+git clone https://github.com/preeyaahh29-droid/jobportal.git
 cd jobportal
 
-Run the Spring Boot application:
+Backend Setup
 
-./mvnw.cmd clean spring-boot:run
+Create the PostgreSQL database:
 
-The backend runs on:
+Database name: jobportal
+
+Create the local ignored configuration file:
+
+src/main/resources/application.properties
+
+Example structure:
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/jobportal
+spring.datasource.username=postgres
+spring.datasource.password=YOUR_LOCAL_PASSWORD
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+server.port=8080
+
+jwt.secret=YOUR_LOCAL_JWT_SECRET
+
+Do not commit real passwords or JWT secrets.
+
+Start the backend:
+
+.\mvnw.cmd spring-boot:run
+
+Backend:
 
 http://localhost:8080
+Frontend Setup
 
-
-3. Run the Frontend
-
-Open another terminal.
-
-Navigate to the frontend folder:
+Open a second terminal:
 
 cd jobportal-frontend
+npm.cmd install
+npm.cmd run dev
 
-Install dependencies:
-
-npm install
-
-Start the React development server:
-
-npm run dev
-
-The frontend runs on:
+Frontend:
 
 http://localhost:5173
 
+The frontend uses:
 
-##🗄️ Database Configuration
+VITE_API_URL
 
-The application uses PostgreSQL.
+for the deployed API URL.
 
-Create a database named:
+For local development, the application falls back to:
 
-jobportal
+http://localhost:8080
 
-Configure the database connection in the Spring Boot application configuration.
+## API Documentation
 
-Example:
+Swagger UI:
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/jobportal
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
+http://localhost:8080/swagger-ui/index.html
 
-Do not commit real database passwords or secret credentials to GitHub.
+OpenAPI specification:
 
+http://localhost:8080/v3/api-docs
 
-##🔐 Authentication
+The deployed API documentation is available at:
 
-The application provides role-based authentication for:
+https://jobportal-6ib1.onrender.com/swagger-ui/index.html
 
-Job Seekers
-Recruiters
+API Security
 
-Authentication is implemented using:
+Public endpoints include:
 
-Spring Security
-JWT
-BCrypt password hashing
+GET  /api/health
+POST /api/users/register
+POST /api/users/login
+GET  /api/jobs
+GET  /api/jobs/**
 
-Protected operations require authenticated users with the appropriate role.
+Protected operations use JWT authentication and role-based authorization.
 
+Examples:
 
-##📄 Resume Upload
+JOB_SEEKER
+POST /api/applications/job/**
+GET  /api/applications/email/**
+DELETE /api/applications/**
 
-Job seekers can upload their resumes while using the application.
+RECRUITER
+POST /api/jobs
+PUT  /api/jobs
+DELETE /api/jobs
+GET  /api/applications
+GET  /api/applications/job/**
+PUT  /api/applications/*/status
 
-Supported resume formats include:
+Resume access requires authentication and ownership/authorization checks.
 
-PDF
-DOC
-DOCX
+## Testing
 
-Recruiters can view applicant resume information from the applicant section.
+The project includes automated tests using:
 
+JUnit 5
+Mockito
+Spring Boot Test
 
-##📊 Application Status
+Run the complete test suite:
 
-Recruiters can update the status of job applications.
+.\mvnw.cmd clean test
 
-Available statuses include:
+Current test result:
 
-APPLIED
-SHORTLISTED
-REJECTED
+Tests run: 8
+Failures: 0
+Errors: 0
+Skipped: 0
 
-Job seekers can view their application status from their dashboard.
+The test suite includes application-service tests covering:
 
+successful application-status updates
+recruiter authorization
+recruiter ownership validation
+invalid status handling
+finalized application protection
+duplicate application prevention
+application retrieval
 
-##🧪 Testing
+## CI/CD
 
-The application can be tested by running the backend and frontend locally and verifying:
+GitHub Actions automatically runs the backend test suite on:
 
-User registration
-User login
-Job creation
-Job search
-Job application
-Resume upload
-Application status updates
-Application withdrawal
-Recruiter job management
+pushes to main
+pull requests targeting main
 
+Workflow:
 
-##📚 Documentation
+.github/workflows/ci.yml
 
-Project documentation is available in the docs folder.
+The CI environment uses a temporary PostgreSQL service for automated testing.
 
-docs/
-├── diagrams/
-│   ├── architecture-diagram.png
-│   ├── er-diagram.png
-│   └── class-diagram.png
-│
-└── Problem_Statement.md
+## Docker
 
+The backend includes a Docker configuration:
 
-##📈 Future Enhancements
+Dockerfile
 
-The project can be further enhanced with:
+Build the backend image:
 
-Smart job matching
-Skill-gap analysis
-Job and recruiter verification
-Application notifications
-Salary transparency
-Duplicate job detection
-Expired job detection
-Recruiter-candidate matching
-Improved application tracking
+docker build -t jobportal-backend .
 
+The container runs the Spring Boot application using the platform-provided PORT environment variable.
 
-##👩‍💻 Author
+## Cloud Deployment
 
-Priya B.
+The application is deployed using Render.
 
-B.Tech Artificial Intelligence and Data Science
+### Deployment Architecture
 
+React Frontend
+      │
+      ▼
+Render Static Site
+      │
+      │ HTTPS API requests
+      ▼
+Spring Boot Backend
+      │
+      ▼
+Render PostgreSQL
 
-##📜 License
+### Current Deployment
 
-This project is developed for educational and academic purposes.
+Frontend
+https://jobportal-frontend-4iox.onrender.com
+
+Backend
+https://jobportal-6ib1.onrender.com
+
+Database
+Render PostgreSQL
+
+Production database credentials and JWT secrets are supplied through deployment environment variables and are not stored in Git.
+
+## Documentation
+
+Project problem statement:
+
+Problem Statement
+
+Application workflow:
+
+## GitHub Repository
+
+https://github.com/preeyaahh29-droid/jobportal
+
+## Important Project Files
+
+File	Purpose
+pom.xml	Backend dependencies and Maven configuration
+Dockerfile	Backend container configuration
+.dockerignore	Docker build exclusions
+.github/workflows/ci.yml	GitHub Actions CI workflow
+jobportal-frontend/	React/Vite frontend
+src/main/java/	Spring Boot backend
+src/test/java/	Automated tests
+docs/	Project documentation and diagrams
+CHANGELOG.md	Project change history
+LICENSE	MIT License
+
+## Development Notes
+
+Secrets and local credentials are intentionally excluded from Git using .gitignore.
+
+The following configuration should never contain real credentials in source control:
+
+src/main/resources/application.properties
+.env
+
+Use environment variables for deployed environments.
+
+## License
+
+This project is licensed under the MIT License.
+
+See LICENSE.
