@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:8080";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 // Adds the JWT to every API request when the user is logged in.
 // Content-Type is not forced here so FormData uploads continue to work.
