@@ -1,5 +1,7 @@
 package com.jobportal.jobportal.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jobportal.jobportal.entity.Application;
 import com.jobportal.jobportal.service.ApplicationService;
 
@@ -22,6 +24,8 @@ import java.util.List;
 @RequestMapping("/api/applications")
 @CrossOrigin
 public class ApplicationController {
+        private static final Logger logger =
+                LoggerFactory.getLogger(ApplicationController.class);
 
     private final ApplicationService applicationService;
 
@@ -65,7 +69,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()
@@ -122,7 +126,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()
@@ -163,7 +167,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()
@@ -239,7 +243,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()
@@ -281,7 +285,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()
@@ -322,7 +326,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            logger.error("Application operation failed", e);
 
             return ResponseEntity
                     .internalServerError()

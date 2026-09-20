@@ -1,5 +1,7 @@
 package com.jobportal.jobportal.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jobportal.jobportal.entity.Application;
 import com.jobportal.jobportal.entity.Job;
 import com.jobportal.jobportal.entity.User;
@@ -18,6 +20,9 @@ import java.util.UUID;
 
 @Service
 public class ApplicationService {
+
+        private static final Logger logger =
+                LoggerFactory.getLogger(ApplicationService.class);
 
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
@@ -517,9 +522,9 @@ return applicationRepository.save(
 
             } catch (IOException e) {
 
-                System.out.println(
-                        "Could not delete resume file: "
-                                + e.getMessage()
+                logger.warn(
+                "Could not delete resume file: {}",
+                        e.getMessage()
                 );
             }
         }
