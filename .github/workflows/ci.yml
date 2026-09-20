@@ -50,3 +50,12 @@ jobs:
 
       - name: Run tests
         run: ./mvnw --batch-mode clean test
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render deployment
+        run: |
+          curl --fail --request POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
