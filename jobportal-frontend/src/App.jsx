@@ -42,7 +42,9 @@ function App() {
 
   const [isLogin, setIsLogin] = useState(true);
   const [user, setUser] = useState(() => getStoredUser());
-  const [isLoggedIn, setIsLoggedIn] = useState(() => getStoredUser() !== null);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => getStoredUser() !== null
+  );
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -86,6 +88,21 @@ function App() {
   const [jobApplicants, setJobApplicants] = useState([]);
   const [loadingApplicants, setLoadingApplicants] =
     useState(false);
+
+  /* ================= EMPLOYER PROFILE ================= */
+
+  const [employerProfile, setEmployerProfile] = useState(null);
+
+  const [loadingEmployerProfile, setLoadingEmployerProfile] =
+    useState(false);
+
+  const [employerProfileForm, setEmployerProfileForm] =
+    useState({
+      companyName: "",
+      companyDescription: "",
+      website: "",
+      location: "",
+    });
 
   /* ================= JOB FORM ================= */
 
@@ -152,6 +169,7 @@ function App() {
       const text = await response.text();
 
       let data = {};
+
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -164,10 +182,12 @@ function App() {
 
         setUser(data);
         setIsLoggedIn(true);
+
         setLoginData({
           email: "",
           password: "",
         });
+
         setMessage("");
       } else {
         setMessage(
@@ -180,6 +200,7 @@ function App() {
       }
     } catch (error) {
       console.error(error);
+
       setMessage(
         "Cannot connect to backend. Make sure Spring Boot is running on port 8080."
       );
@@ -209,6 +230,7 @@ function App() {
       const text = await response.text();
 
       let data = {};
+
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -242,6 +264,7 @@ function App() {
       }
     } catch (error) {
       console.error(error);
+
       setMessage(
         "Cannot connect to backend."
       );
@@ -286,7 +309,9 @@ function App() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch recruiter jobs");
+        throw new Error(
+          "Failed to fetch recruiter jobs"
+        );
       }
 
       const data = await response.json();
@@ -294,7 +319,10 @@ function App() {
       setJobs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
-      setMessage("Unable to load your job postings.");
+
+      setMessage(
+        "Unable to load your job postings."
+      );
     } finally {
       setLoadingJobs(false);
     }
@@ -313,11 +341,14 @@ function App() {
 
     const matchesLocation =
       location === "" ||
-      job.location?.toLowerCase().includes(location);
+      job.location
+        ?.toLowerCase()
+        .includes(location);
 
     const matchesSalary =
       minSalary === "" ||
-      Number(job.salary || 0) >= Number(minSalary);
+      Number(job.salary || 0) >=
+        Number(minSalary);
 
     return (
       matchesSearch &&
@@ -360,23 +391,46 @@ function App() {
       .filter(Boolean);
   };
 
-  const skillMatches = (candidateSkill, requiredSkill) => {
-    const candidate = candidateSkill.toLowerCase().trim();
-    const required = requiredSkill.toLowerCase().trim();
+  const skillMatches = (
+    candidateSkill,
+    requiredSkill
+  ) => {
+    const candidate =
+      candidateSkill.toLowerCase().trim();
+
+    const required =
+      requiredSkill.toLowerCase().trim();
 
     if (!candidate || !required) return false;
+
     if (candidate === required) return true;
-    if (candidate.includes(required) || required.includes(candidate)) return true;
 
-    const candidateWords = normalizeWords(candidate);
-    const requiredWords = normalizeWords(required);
+    if (
+      candidate.includes(required) ||
+      required.includes(candidate)
+    ) {
+      return true;
+    }
 
-    return requiredWords.length > 0 &&
-      requiredWords.every((word) => candidateWords.includes(word));
+    const candidateWords =
+      normalizeWords(candidate);
+
+    const requiredWords =
+      normalizeWords(required);
+
+    return (
+      requiredWords.length > 0 &&
+      requiredWords.every((word) =>
+        candidateWords.includes(word)
+      )
+    );
   };
 
   const getJobMatch = (job) => {
-    if (!job || user?.role !== "JOB_SEEKER") {
+    if (
+      !job ||
+      user?.role !== "JOB_SEEKER"
+    ) {
       return {
         score: null,
         matchedSkills: [],
@@ -385,8 +439,11 @@ function App() {
       };
     }
 
-    const candidateSkills = getProfileSkills();
-    const requiredSkills = getJobSkills(job);
+    const candidateSkills =
+      getProfileSkills();
+
+    const requiredSkills =
+      getJobSkills(job);
 
     if (candidateSkills.length === 0) {
       return {
@@ -397,27 +454,39 @@ function App() {
       };
     }
 
-    const matchedSkills = requiredSkills.filter((required) =>
-      candidateSkills.some((candidate) =>
-        skillMatches(candidate, required)
-      )
-    );
+    const matchedSkills =
+      requiredSkills.filter((required) =>
+        candidateSkills.some((candidate) =>
+          skillMatches(candidate, required)
+        )
+      );
 
-    const missingSkills = requiredSkills.filter(
-      (required) => !matchedSkills.includes(required)
-    );
+    const missingSkills =
+      requiredSkills.filter(
+        (required) =>
+          !matchedSkills.includes(required)
+      );
 
     const skillScore =
       requiredSkills.length > 0
-        ? (matchedSkills.length / requiredSkills.length) * 60
+        ? (matchedSkills.length /
+            requiredSkills.length) *
+          60
         : 30;
 
     const preferredRole = (
-      profile?.preferredJobRole || profileForm.preferredJobRole || ""
-    ).toLowerCase().trim();
+      profile?.preferredJobRole ||
+      profileForm.preferredJobRole ||
+      ""
+    )
+      .toLowerCase()
+      .trim();
 
-    const jobTitle = (job.title || "").toLowerCase();
-    const jobDescription = (job.description || "").toLowerCase();
+    const jobTitle =
+      (job.title || "").toLowerCase();
+
+    const jobDescription =
+      (job.description || "").toLowerCase();
 
     const roleScore =
       preferredRole &&
@@ -430,10 +499,15 @@ function App() {
         : 7.5;
 
     const preferredLocation = (
-      profile?.preferredLocation || profileForm.preferredLocation || ""
-    ).toLowerCase().trim();
+      profile?.preferredLocation ||
+      profileForm.preferredLocation ||
+      ""
+    )
+      .toLowerCase()
+      .trim();
 
-    const jobLocation = (job.location || "").toLowerCase();
+    const jobLocation =
+      (job.location || "").toLowerCase();
 
     const locationScore =
       preferredLocation &&
@@ -445,13 +519,19 @@ function App() {
         : 5;
 
     const preferredJobType = (
-      profile?.jobType || profileForm.jobType || ""
-    ).toLowerCase().trim();
+      profile?.jobType ||
+      profileForm.jobType ||
+      ""
+    )
+      .toLowerCase()
+      .trim();
 
-    const jobType = (job.jobType || "").toLowerCase().trim();
+    const jobType =
+      (job.jobType || "").toLowerCase().trim();
 
     const jobTypeScore =
-      preferredJobType && jobType &&
+      preferredJobType &&
+      jobType &&
       preferredJobType === jobType
         ? 5
         : preferredJobType && jobType
@@ -459,25 +539,42 @@ function App() {
         : 2.5;
 
     const expectedSalary = Number(
-      profile?.expectedSalary || profileForm.expectedSalary || 0
+      profile?.expectedSalary ||
+        profileForm.expectedSalary ||
+        0
     );
-    const jobSalary = Number(job.salary || 0);
+
+    const jobSalary = Number(
+      job.salary || 0
+    );
 
     const salaryScore =
-      expectedSalary > 0 && jobSalary >= expectedSalary
+      expectedSalary > 0 &&
+      jobSalary >= expectedSalary
         ? 10
         : expectedSalary > 0
         ? 0
         : 5;
 
-    const score = Math.min(100, Math.round(
-      skillScore + roleScore + locationScore + jobTypeScore + salaryScore
-    ));
+    const score = Math.min(
+      100,
+      Math.round(
+        skillScore +
+          roleScore +
+          locationScore +
+          jobTypeScore +
+          salaryScore
+      )
+    );
 
     let label = "Low match";
-    if (score >= 80) label = "Excellent match";
-    else if (score >= 60) label = "Good match";
-    else if (score >= 40) label = "Partial match";
+
+    if (score >= 80)
+      label = "Excellent match";
+    else if (score >= 60)
+      label = "Good match";
+    else if (score >= 40)
+      label = "Partial match";
 
     return {
       score,
@@ -489,9 +586,20 @@ function App() {
 
   const getMatchStyle = (score) => {
     if (score === null) return {};
-    if (score >= 80) return { border: "1px solid #22c55e" };
-    if (score >= 60) return { border: "1px solid #eab308" };
-    return { border: "1px solid #ef4444" };
+
+    if (score >= 80)
+      return {
+        border: "1px solid #22c55e",
+      };
+
+    if (score >= 60)
+      return {
+        border: "1px solid #eab308",
+      };
+
+    return {
+      border: "1px solid #ef4444",
+    };
   };
 
   /* =========================================================
@@ -534,13 +642,17 @@ function App() {
       ".docx",
     ];
 
-    const fileName = file.name.toLowerCase();
+    const fileName =
+      file.name.toLowerCase();
 
-    const validType = allowedTypes.includes(file.type);
+    const validType =
+      allowedTypes.includes(file.type);
 
-    const validExtension = allowedExtensions.some(
-      (extension) => fileName.endsWith(extension)
-    );
+    const validExtension =
+      allowedExtensions.some(
+        (extension) =>
+          fileName.endsWith(extension)
+      );
 
     if (!validType && !validExtension) {
       setMessage(
@@ -550,80 +662,103 @@ function App() {
       e.target.value = "";
       setResumeFile(null);
       setResumeName("");
+
       return;
     }
 
     setResumeFile(file);
     setResumeName(file.name);
-    setMessage("Resume selected successfully! 📄");
-  };
-  
-  const handleViewResume = async (resumeUrl) => {
-  if (!resumeUrl) {
-    setMessage("Resume is not available.");
-    return;
-  }
 
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    setMessage("Please login again.");
-    return;
-  }
-
-  const newWindow = window.open("", "_blank");
-
-  try {
-    const response = await apiFetch(
-      `${API_URL}/api/applications/resume/${encodeURIComponent(resumeUrl)}`
+    setMessage(
+      "Resume selected successfully! 📄"
     );
+  };
 
-    if (!response.ok) {
-      if (newWindow) {
-        newWindow.close();
-      }
-
+  const handleViewResume = async (
+    resumeUrl
+  ) => {
+    if (!resumeUrl) {
       setMessage(
-        `Unable to open resume. HTTP ${response.status}`
+        "Resume is not available."
       );
 
       return;
     }
 
-    const blob = await response.blob();
+    const token =
+      localStorage.getItem("token");
 
-    const blobUrl = window.URL.createObjectURL(blob);
+    if (!token) {
+      setMessage(
+        "Please login again."
+      );
 
-    if (newWindow) {
-      newWindow.location.href = blobUrl;
+      return;
     }
 
-    setTimeout(() => {
-      window.URL.revokeObjectURL(blobUrl);
-    }, 60000);
+    const newWindow =
+      window.open("", "_blank");
 
-  } catch (error) {
-    console.error("Resume viewing error:", error);
+    try {
+      const response = await apiFetch(
+        `${API_URL}/api/applications/resume/${encodeURIComponent(
+          resumeUrl
+        )}`
+      );
 
-    if (newWindow) {
-      newWindow.close();
+      if (!response.ok) {
+        if (newWindow) {
+          newWindow.close();
+        }
+
+        setMessage(
+          `Unable to open resume. HTTP ${response.status}`
+        );
+
+        return;
+      }
+
+      const blob =
+        await response.blob();
+
+      const blobUrl =
+        window.URL.createObjectURL(
+          blob
+        );
+
+      if (newWindow) {
+        newWindow.location.href =
+          blobUrl;
+      }
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(
+          blobUrl
+        );
+      }, 60000);
+    } catch (error) {
+      console.error(
+        "Resume viewing error:",
+        error
+      );
+
+      if (newWindow) {
+        newWindow.close();
+      }
+
+      setMessage(
+        "Unable to open resume."
+      );
     }
+  };
 
-    setMessage("Unable to open resume.");
-  }
-};
-
-  /* =========================================================
-     VIEW RESUME
-     Uses apiFetch so the JWT Authorization header is included.
-     ========================================================= */
-
-  
   /* =========================================================
      APPLICATIONS
      ========================================================= */
 
-  const fetchApplications = async (email) => {
+  const fetchApplications = async (
+    email
+  ) => {
     if (!email) return;
 
     setLoadingApplications(true);
@@ -636,12 +771,18 @@ function App() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch applications");
+        throw new Error(
+          "Failed to fetch applications"
+        );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      const list = Array.isArray(data) ? data : [];
+      const list =
+        Array.isArray(data)
+          ? data
+          : [];
 
       setApplications(list);
 
@@ -649,15 +790,18 @@ function App() {
         .filter(
           (application) =>
             application.job &&
-            application.job.id !== undefined
+            application.job.id !==
+              undefined
         )
         .map(
-          (application) => application.job.id
+          (application) =>
+            application.job.id
         );
 
       setAppliedJobs(jobIds);
     } catch (error) {
       console.error(error);
+
       setMessage(
         "Unable to load your applications."
       );
@@ -683,17 +827,25 @@ function App() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch applicants");
+        throw new Error(
+          "Failed to fetch applicants"
+        );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       setJobApplicants(
-        Array.isArray(data) ? data : []
+        Array.isArray(data)
+          ? data
+          : []
       );
     } catch (error) {
       console.error(error);
-      setMessage("Unable to load applicants.");
+
+      setMessage(
+        "Unable to load applicants."
+      );
     } finally {
       setLoadingApplicants(false);
     }
@@ -722,7 +874,9 @@ function App() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update status");
+        throw new Error(
+          "Failed to update status"
+        );
       }
 
       setMessage(
@@ -737,6 +891,7 @@ function App() {
       }
     } catch (error) {
       console.error(error);
+
       setMessage(
         "Unable to update application status."
       );
@@ -746,89 +901,113 @@ function App() {
   /* =========================================================
      APPLY
      ========================================================= */
-  const handleApply = async (jobId) => {
 
-  if (!user || !user.id) {
-    setMessage("Please login again.");
-    return;
-  }
+  const handleApply = async (
+    jobId
+  ) => {
+    if (!user || !user.id) {
+      setMessage(
+        "Please login again."
+      );
 
-  if (!resumeFile) {
-    setMessage("Please upload your resume before applying. 📄");
-    return;
-  }
+      return;
+    }
 
-  if (appliedJobs.includes(jobId)) {
-    setMessage("You have already applied for this job.");
-    return;
-  }
+    if (!resumeFile) {
+      setMessage(
+        "Please upload your resume before applying. 📄"
+      );
 
-  try {
+      return;
+    }
 
-    const formData = new FormData();
+    if (
+      appliedJobs.includes(jobId)
+    ) {
+      setMessage(
+        "You have already applied for this job."
+      );
 
-    // IMPORTANT
-    formData.append("userId", user.id);
-
-    formData.append("resume", resumeFile);
-
-    const response = await apiFetch(
-      `${API_URL}/api/applications/job/${jobId}`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const text = await response.text();
-
-    let data = null;
+      return;
+    }
 
     try {
-      data = text ? JSON.parse(text) : null;
-    } catch {
-      data = null;
-    }
+      const formData =
+        new FormData();
 
-    if (response.ok) {
-
-      setAppliedJobs((previous) =>
-        previous.includes(jobId)
-          ? previous
-          : [...previous, jobId]
+      formData.append(
+        "userId",
+        user.id
       );
 
-      setMessage(
-        "Application submitted successfully! 🎉"
+      formData.append(
+        "resume",
+        resumeFile
       );
 
-      await fetchApplications(user.email);
+      const response = await apiFetch(
+        `${API_URL}/api/applications/job/${jobId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-    } else {
+      const text =
+        await response.text();
 
+      let data = null;
+
+      try {
+        data = text
+          ? JSON.parse(text)
+          : null;
+      } catch {
+        data = null;
+      }
+
+      if (response.ok) {
+        setAppliedJobs(
+          (previous) =>
+            previous.includes(jobId)
+              ? previous
+              : [
+                  ...previous,
+                  jobId,
+                ]
+        );
+
+        setMessage(
+          "Application submitted successfully! 🎉"
+        );
+
+        await fetchApplications(
+          user.email
+        );
+      } else {
+        console.error(
+          "Application failed:",
+          response.status,
+          data
+        );
+
+        setMessage(
+          data?.message ||
+            data?.error ||
+            `Failed to submit application. HTTP ${response.status}`
+        );
+      }
+    } catch (error) {
       console.error(
-        "Application failed:",
-        response.status,
-        data
+        "Apply error:",
+        error
       );
 
       setMessage(
-        data?.message ||
-        data?.error ||
-        `Failed to submit application. HTTP ${response.status}`
+        "Cannot connect to backend. Make sure Spring Boot is running."
       );
     }
-
-  } catch (error) {
-
-    console.error("Apply error:", error);
-
-    setMessage(
-      "Cannot connect to backend. Make sure Spring Boot is running."
-    );
-  }
-};
-  
+  };
 
   /* =========================================================
      WITHDRAW
@@ -837,16 +1016,18 @@ function App() {
   const handleWithdrawApplication = async (
     applicationId
   ) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to withdraw this application?"
-    );
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to withdraw this application?"
+      );
 
     if (!confirmed) return;
 
     const applicationToDelete =
       applications.find(
         (application) =>
-          application.id === applicationId
+          application.id ===
+          applicationId
       );
 
     try {
@@ -858,23 +1039,27 @@ function App() {
       );
 
       if (response.ok) {
-        setApplications((previous) =>
-          previous.filter(
-            (application) =>
-              application.id !== applicationId
-          )
+        setApplications(
+          (previous) =>
+            previous.filter(
+              (application) =>
+                application.id !==
+                applicationId
+            )
         );
 
         if (
           applicationToDelete?.job?.id !==
           undefined
         ) {
-          setAppliedJobs((previous) =>
-            previous.filter(
-              (jobId) =>
-                jobId !==
-                applicationToDelete.job.id
-            )
+          setAppliedJobs(
+            (previous) =>
+              previous.filter(
+                (jobId) =>
+                  jobId !==
+                  applicationToDelete
+                    .job.id
+              )
           );
         }
 
@@ -882,7 +1067,9 @@ function App() {
           "Application withdrawn successfully. ✅"
         );
       } else {
-        const text = await response.text();
+        const text =
+          await response.text();
+
         setMessage(
           text ||
             "Failed to withdraw application."
@@ -890,7 +1077,10 @@ function App() {
       }
     } catch (error) {
       console.error(error);
-      setMessage("Cannot connect to backend.");
+
+      setMessage(
+        "Cannot connect to backend."
+      );
     }
   };
 
@@ -899,12 +1089,17 @@ function App() {
      ========================================================= */
 
   const handleJobFormChange = (e) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value,
+    } = e.target;
 
-    setJobForm((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setJobForm(
+      (previous) => ({
+        ...previous,
+        [name]: value,
+      })
+    );
   };
 
   const resetJobForm = () => {
@@ -922,13 +1117,19 @@ function App() {
     setEditingJobId(null);
   };
 
-  const handleJobSubmit = async (e) => {
+  const handleJobSubmit = async (
+    e
+  ) => {
     e.preventDefault();
 
-    if (!user || user.role !== "RECRUITER") {
+    if (
+      !user ||
+      user.role !== "RECRUITER"
+    ) {
       setMessage(
         "Only recruiters can post or edit jobs."
       );
+
       return;
     }
 
@@ -943,53 +1144,74 @@ function App() {
       setMessage(
         "Please fill in all job details."
       );
+
       return;
     }
 
     const jobData = {
       title: jobForm.title.trim(),
-      company: jobForm.company.trim(),
-      location: jobForm.location.trim(),
-      description: jobForm.description.trim(),
-      salary: Number(jobForm.salary),
-      jobType: jobForm.jobType,
-      experience: jobForm.experience,
-      skills: jobForm.skills.trim(),
+      company:
+        jobForm.company.trim(),
+      location:
+        jobForm.location.trim(),
+      description:
+        jobForm.description.trim(),
+      salary:
+        Number(jobForm.salary),
+      jobType:
+        jobForm.jobType,
+      experience:
+        jobForm.experience,
+      skills:
+        jobForm.skills.trim(),
     };
 
     try {
       let response;
 
-      if (editingJobId !== null) {
-        response = await apiFetch(
-          `${API_URL}/api/jobs/${editingJobId}?recruiterId=${user.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jobData),
-          }
-        );
+      if (
+        editingJobId !== null
+      ) {
+        response =
+          await apiFetch(
+            `${API_URL}/api/jobs/${editingJobId}?recruiterId=${user.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                jobData
+              ),
+            }
+          );
       } else {
-        response = await apiFetch(
-          `${API_URL}/api/jobs?recruiterId=${user.id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jobData),
-          }
-        );
+        response =
+          await apiFetch(
+            `${API_URL}/api/jobs?recruiterId=${user.id}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                jobData
+              ),
+            }
+          );
       }
 
-      const text = await response.text();
+      const text =
+        await response.text();
 
       let data = null;
 
       try {
-        data = text ? JSON.parse(text) : null;
+        data = text
+          ? JSON.parse(text)
+          : null;
       } catch {
         data = null;
       }
@@ -1003,7 +1225,9 @@ function App() {
 
         resetJobForm();
 
-        await fetchRecruiterJobs(user.id);
+        await fetchRecruiterJobs(
+          user.id
+        );
       } else {
         setMessage(
           data?.message ||
@@ -1013,27 +1237,40 @@ function App() {
       }
     } catch (error) {
       console.error(error);
-      setMessage("Cannot connect to backend.");
+
+      setMessage(
+        "Cannot connect to backend."
+      );
     }
   };
 
-  const handleEditJob = (job) => {
+  const handleEditJob = (
+    job
+  ) => {
     setEditingJobId(job.id);
 
     setJobForm({
-      title: job.title || "",
-      company: job.company || "",
-      location: job.location || "",
-      description: job.description || "",
+      title:
+        job.title || "",
+      company:
+        job.company || "",
+      location:
+        job.location || "",
+      description:
+        job.description || "",
       salary:
         job.salary !== undefined &&
         job.salary !== null
           ? job.salary
           : "",
-      jobType: job.jobType || "Full Time",
+      jobType:
+        job.jobType ||
+        "Full Time",
       experience:
-        job.experience || "0-2 Years",
-      skills: job.skills || "",
+        job.experience ||
+        "0-2 Years",
+      skills:
+        job.skills || "",
     });
 
     window.scrollTo({
@@ -1042,10 +1279,13 @@ function App() {
     });
   };
 
-  const handleDeleteJob = async (jobId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this job?"
-    );
+  const handleDeleteJob = async (
+    jobId
+  ) => {
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this job?"
+      );
 
     if (!confirmed) return;
 
@@ -1062,32 +1302,270 @@ function App() {
           "Job deleted successfully. ✅"
         );
 
-        if (selectedJobId === jobId) {
+        if (
+          selectedJobId ===
+          jobId
+        ) {
           closeApplicants();
         }
 
-        await fetchRecruiterJobs(user.id);
+        await fetchRecruiterJobs(
+          user.id
+        );
       } else {
-        const text = await response.text();
+        const text =
+          await response.text();
+
         setMessage(
-          text || "Failed to delete job."
+          text ||
+            "Failed to delete job."
         );
       }
     } catch (error) {
       console.error(error);
-      setMessage("Cannot connect to backend.");
+
+      setMessage(
+        "Cannot connect to backend."
+      );
     }
   };
+
+  /* =========================================================
+     EMPLOYER PROFILE
+     ========================================================= */
+
+  const fetchEmployerProfile = async (
+    userId
+  ) => {
+    if (!userId) return;
+
+    setLoadingEmployerProfile(
+      true
+    );
+
+    try {
+      const response =
+        await apiFetch(
+          `${API_URL}/api/employer/profile/${userId}`
+        );
+
+      if (
+        response.status ===
+        404
+      ) {
+        setEmployerProfile(
+          null
+        );
+
+        setEmployerProfileForm(
+          {
+            companyName: "",
+            companyDescription:
+              "",
+            website: "",
+            location: "",
+          }
+        );
+
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          `Employer profile request failed: ${response.status}`
+        );
+      }
+
+      const data =
+        await response.json();
+
+      setEmployerProfile(
+        data
+      );
+
+      setEmployerProfileForm(
+        {
+          companyName:
+            data.companyName ||
+            "",
+          companyDescription:
+            data.companyDescription ||
+            "",
+          website:
+            data.website ||
+            "",
+          location:
+            data.location ||
+            "",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Employer profile loading error:",
+        error
+      );
+
+      setMessage(
+        "Unable to load employer profile."
+      );
+    } finally {
+      setLoadingEmployerProfile(
+        false
+      );
+    }
+  };
+
+  const handleEmployerProfileChange = (
+    e
+  ) => {
+    const {
+      name,
+      value,
+    } = e.target;
+
+    setEmployerProfileForm(
+      (previous) => ({
+        ...previous,
+        [name]: value,
+      })
+    );
+  };
+
+  const handleEmployerProfileSubmit =
+    async (e) => {
+      e.preventDefault();
+
+      if (
+        !user ||
+        user.role !==
+          "RECRUITER"
+      ) {
+        setMessage(
+          "Only recruiters can manage employer profiles."
+        );
+
+        return;
+      }
+
+      if (
+        !employerProfileForm.companyName.trim() ||
+        !employerProfileForm.location.trim()
+      ) {
+        setMessage(
+          "Company name and location are required."
+        );
+
+        return;
+      }
+
+      const profileData = {
+        companyName:
+          employerProfileForm.companyName.trim(),
+
+        companyDescription:
+          employerProfileForm.companyDescription.trim(),
+
+        website:
+          employerProfileForm.website.trim(),
+
+        location:
+          employerProfileForm.location.trim(),
+      };
+
+      try {
+        const response =
+          await apiFetch(
+            `${API_URL}/api/employer/profile/${user.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                profileData
+              ),
+            }
+          );
+
+        const text =
+          await response.text();
+
+        let data = null;
+
+        try {
+          data = text
+            ? JSON.parse(text)
+            : null;
+        } catch {
+          data = null;
+        }
+
+        if (!response.ok) {
+          setMessage(
+            typeof data ===
+              "string"
+              ? data
+              : data?.message ||
+                  data?.error ||
+                  `Unable to save employer profile. HTTP ${response.status}`
+          );
+
+          return;
+        }
+
+        setEmployerProfile(
+          data
+        );
+
+        setEmployerProfileForm(
+          {
+            companyName:
+              data.companyName ||
+              "",
+            companyDescription:
+              data.companyDescription ||
+              "",
+            website:
+              data.website ||
+              "",
+            location:
+              data.location ||
+              "",
+          }
+        );
+
+        setMessage(
+          "Employer profile saved successfully! ✅"
+        );
+      } catch (error) {
+        console.error(
+          "Employer profile save error:",
+          error
+        );
+
+        setMessage(
+          "Cannot connect to employer profile backend. Make sure Spring Boot is running on port 8080."
+        );
+      }
+    };
 
   /* =========================================================
      APPLICATION TRACKER
      ========================================================= */
 
-  const normalizeApplicationStatus = (status) => {
-    return String(status || "APPLIED")
+  const normalizeApplicationStatus = (
+    status
+  ) => {
+    return String(
+      status || "APPLIED"
+    )
       .trim()
       .toUpperCase()
-      .replace(/\s+/g, "_");
+      .replace(
+        /\s+/g,
+        "_"
+      );
   };
 
   const applicationStages = [
@@ -1098,28 +1576,76 @@ function App() {
     "SELECTED",
   ];
 
-  const getTrackerIndex = (status) => {
-    const normalized = normalizeApplicationStatus(status);
-    if (normalized === "REJECTED") return -1;
-    const index = applicationStages.indexOf(normalized);
-    return index === -1 ? 0 : index;
+  const getTrackerIndex = (
+    status
+  ) => {
+    const normalized =
+      normalizeApplicationStatus(
+        status
+      );
+
+    if (
+      normalized ===
+      "REJECTED"
+    ) {
+      return -1;
+    }
+
+    const index =
+      applicationStages.indexOf(
+        normalized
+      );
+
+    return index === -1
+      ? 0
+      : index;
   };
 
-  const getStatusLabel = (status) => {
-    const normalized = normalizeApplicationStatus(status);
+  const getStatusLabel = (
+    status
+  ) => {
+    const normalized =
+      normalizeApplicationStatus(
+        status
+      );
+
     const labels = {
-      APPLIED: "Applied",
-      VIEWED: "Recruiter Viewed",
-      SHORTLISTED: "Shortlisted",
-      INTERVIEW: "Interview",
-      SELECTED: "Selected",
-      REJECTED: "Rejected",
+      APPLIED:
+        "Applied",
+
+      VIEWED:
+        "Recruiter Viewed",
+
+      SHORTLISTED:
+        "Shortlisted",
+
+      INTERVIEW:
+        "Interview",
+
+      SELECTED:
+        "Selected",
+
+      REJECTED:
+        "Rejected",
     };
-    return labels[normalized] || normalized.replace(/_/g, " ");
+
+    return (
+      labels[normalized] ||
+      normalized.replace(
+        /_/g,
+        " "
+      )
+    );
   };
 
-  const getStatusEmoji = (status) => {
-    const normalized = normalizeApplicationStatus(status);
+  const getStatusEmoji = (
+    status
+  ) => {
+    const normalized =
+      normalizeApplicationStatus(
+        status
+      );
+
     const emojis = {
       APPLIED: "📨",
       VIEWED: "👀",
@@ -1128,270 +1654,567 @@ function App() {
       SELECTED: "🎉",
       REJECTED: "❌",
     };
-    return emojis[normalized] || "📌";
+
+    return (
+      emojis[normalized] ||
+      "📌"
+    );
   };
 
-  const renderApplicationTracker = (application) => {
-  const status = normalizeApplicationStatus(application?.status);
+  const renderApplicationTracker =
+    (application) => {
+      const status =
+        normalizeApplicationStatus(
+          application?.status
+        );
 
-  if (status === "REJECTED") {
-    return (
-      <div className="application-tracker rejected-tracker">
-        <div className="tracker-title">
-          Application Status
-        </div>
+      if (
+        status ===
+        "REJECTED"
+      ) {
+        return (
+          <div className="application-tracker rejected-tracker">
+            <div className="tracker-title">
+              Application Status
+            </div>
 
-        <div className="rejected-status">
-          <span className="status-icon">❌</span>
+            <div className="rejected-status">
+              <span className="status-icon">
+                ❌
+              </span>
 
-          <div>
-            <strong>Application Rejected</strong>
+              <div>
+                <strong>
+                  Application Rejected
+                </strong>
 
-            <p>
-              Your application was not selected for the next
-              stage this time.
-            </p>
-          </div>
-        </div>
+                <p>
+                  Your application was not selected for the next
+                  stage this time.
+                </p>
+              </div>
+            </div>
 
-        <div className="timeline">
-          {applicationStages
-            .slice(0, 2)
-            .map((stage) => (
-              <div
-                key={stage}
-                className="timeline-item completed"
-              >
+            <div className="timeline">
+              {applicationStages
+                .slice(0, 2)
+                .map(
+                  (stage) => (
+                    <div
+                      key={stage}
+                      className="timeline-item completed"
+                    >
+                      <div className="timeline-dot">
+                        ✓
+                      </div>
+
+                      <div className="timeline-content">
+                        <strong>
+                          {
+                            getStatusEmoji(
+                              stage
+                            )
+                          }{" "}
+                          {
+                            getStatusLabel(
+                              stage
+                            )
+                          }
+                        </strong>
+
+                        <span>
+                          Completed
+                        </span>
+                      </div>
+                    </div>
+                  )
+                )}
+
+              <div className="timeline-item rejected">
                 <div className="timeline-dot">
-                  ✓
+                  ❌
                 </div>
 
                 <div className="timeline-content">
                   <strong>
-                    {getStatusEmoji(stage)}{" "}
-                    {getStatusLabel(stage)}
+                    ❌ Rejected
                   </strong>
 
-                  <span>Completed</span>
+                  <span>
+                    Application closed
+                  </span>
                 </div>
               </div>
-            ))}
-
-          <div className="timeline-item rejected">
-            <div className="timeline-dot">
-              ❌
-            </div>
-
-            <div className="timeline-content">
-              <strong>
-                ❌ Rejected
-              </strong>
-
-              <span>Application closed</span>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
+        );
+      }
 
-  const currentIndex = getTrackerIndex(status);
+      const currentIndex =
+        getTrackerIndex(status);
 
-  return (
-    <div className="application-tracker">
+      return (
+        <div className="application-tracker">
+          <div className="tracker-header">
+            <div>
+              <h4>
+                Application Status
+              </h4>
 
-      <div className="tracker-header">
-        <div>
-          <h4>Application Status</h4>
-          <p>Track your application progress</p>
-        </div>
-
-        <div className="current-status-badge">
-          {getStatusEmoji(status)}{" "}
-          {getStatusLabel(status)}
-        </div>
-      </div>
-
-      <div className="timeline">
-
-        {applicationStages.map((stage, index) => {
-          const completed = index <= currentIndex;
-          const current = index === currentIndex;
-
-          return (
-            <div
-              className={`timeline-item ${
-                completed ? "completed" : ""
-              } ${current ? "current" : ""}`}
-              key={stage}
-            >
-
-              <div className="timeline-dot">
-                {completed
-                  ? "✓"
-                  : getStatusEmoji(stage)}
-              </div>
-
-              <div className="timeline-content">
-
-                <strong>
-                  {getStatusEmoji(stage)}{" "}
-                  {getStatusLabel(stage)}
-                </strong>
-
-                <span>
-                  {current
-                    ? "Current stage"
-                    : completed
-                    ? "Completed"
-                    : "Pending"}
-                </span>
-
-              </div>
-
-              {index < applicationStages.length - 1 && (
-                <div
-                  className={`timeline-line ${
-                    index < currentIndex
-                      ? "completed-line"
-                      : ""
-                  }`}
-                />
-              )}
-
+              <p>
+                Track your application progress
+              </p>
             </div>
-          );
-        })}
 
-      </div>
+            <div className="current-status-badge">
+              {
+                getStatusEmoji(
+                  status
+                )
+              }{" "}
+              {
+                getStatusLabel(
+                  status
+                )
+              }
+            </div>
+          </div>
 
-      <div className="tracker-footer">
-        Current status:
-        <strong>
-          {" "}
-          {getStatusEmoji(status)}{" "}
-          {getStatusLabel(status)}
-        </strong>
-      </div>
+          <div className="timeline">
+            {applicationStages.map(
+              (
+                stage,
+                index
+              ) => {
+                const completed =
+                  index <=
+                  currentIndex;
 
-    </div>
-  );
-};
+                const current =
+                  index ===
+                  currentIndex;
+
+                return (
+                  <div
+                    className={`timeline-item ${
+                      completed
+                        ? "completed"
+                        : ""
+                    } ${
+                      current
+                        ? "current"
+                        : ""
+                    }`}
+                    key={stage}
+                  >
+                    <div className="timeline-dot">
+                      {completed
+                        ? "✓"
+                        : getStatusEmoji(
+                            stage
+                          )}
+                    </div>
+
+                    <div className="timeline-content">
+                      <strong>
+                        {
+                          getStatusEmoji(
+                            stage
+                          )
+                        }{" "}
+                        {
+                          getStatusLabel(
+                            stage
+                          )
+                        }
+                      </strong>
+
+                      <span>
+                        {current
+                          ? "Current stage"
+                          : completed
+                          ? "Completed"
+                          : "Pending"}
+                      </span>
+                    </div>
+
+                    {index <
+                      applicationStages.length -
+                        1 && (
+                      <div
+                        className={`timeline-line ${
+                          index <
+                          currentIndex
+                            ? "completed-line"
+                            : ""
+                        }`}
+                      />
+                    )}
+                  </div>
+                );
+              }
+            )}
+          </div>
+
+          <div className="tracker-footer">
+            Current status:
+            <strong>
+              {" "}
+              {
+                getStatusEmoji(
+                  status
+                )
+              }{" "}
+              {
+                getStatusLabel(
+                  status
+                )
+              }
+            </strong>
+          </div>
+        </div>
+      );
+    };
 
   /* =========================================================
      PROFILE
      ========================================================= */
 
-  const emptyProfileForm = () => ({
-    phone: "", location: "", headline: "", about: "",
-    preferredJobRole: "", preferredLocation: "", expectedSalary: "",
-    jobType: "Full Time", skills: "", education: "",
-    experience: "", projects: "",
-  });
+  const emptyProfileForm =
+    () => ({
+      phone: "",
+      location: "",
+      headline: "",
+      about: "",
+      preferredJobRole: "",
+      preferredLocation:
+        "",
+      expectedSalary: "",
+      jobType: "Full Time",
+      skills: "",
+      education: "",
+      experience: "",
+      projects: "",
+    });
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (
+    userId
+  ) => {
     if (!userId) return;
+
     setLoadingProfile(true);
+
     try {
-      const response = await apiFetch(`${API_URL}/api/jobseeker/profile/${userId}`);
-      if (response.status === 404) {
+      const response =
+        await apiFetch(
+          `${API_URL}/api/jobseeker/profile/${userId}`
+        );
+
+      if (
+        response.status ===
+        404
+      ) {
         setProfile(null);
-        setProfileForm(emptyProfileForm());
+        setProfileForm(
+          emptyProfileForm()
+        );
+
         return;
       }
-      if (!response.ok) throw new Error(`Profile request failed: ${response.status}`);
-      const data = await response.json();
-      setProfile(data);
-      setProfileForm({
-        phone: data.phone || "", location: data.location || "",
-        headline: data.headline || "", about: data.about || "",
-        preferredJobRole: data.preferredJobRole || "",
-        preferredLocation: data.preferredLocation || "",
-        expectedSalary: data.expectedSalary ?? "",
-        jobType: data.jobType || "Full Time",
-        skills: data.skills || "", education: data.education || "",
-        experience: data.experience || "", projects: data.projects || "",
-      });
-    } catch (error) {
-      console.error("Profile loading error:", error);
-      setMessage("Unable to load your professional profile.");
-    } finally { setLoadingProfile(false); }
-  };
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileForm((previous) => ({ ...previous, [name]: value }));
-  };
-
-  const calculateProfileCompleteness = () => {
-    const fields = [
-      profileForm.headline, profileForm.phone, profileForm.location,
-      profileForm.about, profileForm.preferredJobRole,
-      profileForm.preferredLocation, profileForm.expectedSalary,
-      profileForm.jobType, profileForm.skills, profileForm.education,
-      profileForm.experience, profileForm.projects,
-    ];
-    const completed = fields.filter((field) => field !== null && field !== undefined && String(field).trim() !== "").length;
-    return Math.round((completed / fields.length) * 100);
-  };
-
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    if (!user?.id) { setMessage("User information is missing. Please login again."); return; }
-    setMessage("");
-    const profileData = {
-      phone: profileForm.phone.trim(),
-      location: profileForm.location.trim(),
-      headline: profileForm.headline.trim(),
-      about: profileForm.about.trim(),
-      preferredJobRole: profileForm.preferredJobRole.trim(),
-      preferredLocation: profileForm.preferredLocation.trim(),
-      expectedSalary: profileForm.expectedSalary !== "" ? Number(profileForm.expectedSalary) : null,
-      jobType: profileForm.jobType,
-      skills: profileForm.skills.trim(),
-      education: profileForm.education.trim(),
-      experience: profileForm.experience.trim(),
-      projects: profileForm.projects.trim(),
-    };
-    try {
-      const response = await apiFetch(`${API_URL}/api/jobseeker/profile/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
-      });
-      const text = await response.text();
-      let data = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = text || null; }
       if (!response.ok) {
-        console.error("Profile save failed:", response.status, data);
-        setMessage(typeof data === "string" ? data : data?.message || data?.error || `Unable to save profile (HTTP ${response.status}).`);
-        return;
+        throw new Error(
+          `Profile request failed: ${response.status}`
+        );
       }
+
+      const data =
+        await response.json();
+
       setProfile(data);
-      setEditingProfile(false);
-      setMessage("Professional profile saved successfully! ✅");
-      await fetchProfile(user.id);
+
+      setProfileForm({
+        phone:
+          data.phone || "",
+
+        location:
+          data.location || "",
+
+        headline:
+          data.headline || "",
+
+        about:
+          data.about || "",
+
+        preferredJobRole:
+          data.preferredJobRole ||
+          "",
+
+        preferredLocation:
+          data.preferredLocation ||
+          "",
+
+        expectedSalary:
+          data.expectedSalary ??
+          "",
+
+        jobType:
+          data.jobType ||
+          "Full Time",
+
+        skills:
+          data.skills || "",
+
+        education:
+          data.education ||
+          "",
+
+        experience:
+          data.experience ||
+          "",
+
+        projects:
+          data.projects ||
+          "",
+      });
     } catch (error) {
-      console.error("Profile save error:", error);
-      setMessage("Cannot connect to profile backend. Make sure Spring Boot is running on port 8080.");
+      console.error(
+        "Profile loading error:",
+        error
+      );
+
+      setMessage(
+        "Unable to load your professional profile."
+      );
+    } finally {
+      setLoadingProfile(
+        false
+      );
     }
   };
 
-  const openProfile = async () => {
-    setShowProfile(true); setEditingProfile(false); setMessage("");
-    if (user?.role === "JOB_SEEKER" && user?.id) await fetchProfile(user.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleProfileChange = (
+    e
+  ) => {
+    const {
+      name,
+      value,
+    } = e.target;
+
+    setProfileForm(
+      (previous) => ({
+        ...previous,
+        [name]: value,
+      })
+    );
   };
 
-  const closeProfile = () => { setShowProfile(false); setEditingProfile(false); setMessage(""); };
+  const calculateProfileCompleteness =
+    () => {
+      const fields = [
+        profileForm.headline,
+        profileForm.phone,
+        profileForm.location,
+        profileForm.about,
+        profileForm.preferredJobRole,
+        profileForm.preferredLocation,
+        profileForm.expectedSalary,
+        profileForm.jobType,
+        profileForm.skills,
+        profileForm.education,
+        profileForm.experience,
+        profileForm.projects,
+      ];
+
+      const completed =
+        fields.filter(
+          (field) =>
+            field !== null &&
+            field !== undefined &&
+            String(field)
+              .trim() !== ""
+        ).length;
+
+      return Math.round(
+        (completed /
+          fields.length) *
+          100
+      );
+    };
+
+  const handleProfileSubmit =
+    async (e) => {
+      e.preventDefault();
+
+      if (!user?.id) {
+        setMessage(
+          "User information is missing. Please login again."
+        );
+
+        return;
+      }
+
+      setMessage("");
+
+      const profileData = {
+        phone:
+          profileForm.phone.trim(),
+
+        location:
+          profileForm.location.trim(),
+
+        headline:
+          profileForm.headline.trim(),
+
+        about:
+          profileForm.about.trim(),
+
+        preferredJobRole:
+          profileForm.preferredJobRole.trim(),
+
+        preferredLocation:
+          profileForm.preferredLocation.trim(),
+
+        expectedSalary:
+          profileForm.expectedSalary !==
+          ""
+            ? Number(
+                profileForm.expectedSalary
+              )
+            : null,
+
+        jobType:
+          profileForm.jobType,
+
+        skills:
+          profileForm.skills.trim(),
+
+        education:
+          profileForm.education.trim(),
+
+        experience:
+          profileForm.experience.trim(),
+
+        projects:
+          profileForm.projects.trim(),
+      };
+
+      try {
+        const response =
+          await apiFetch(
+            `${API_URL}/api/jobseeker/profile/${user.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                profileData
+              ),
+            }
+          );
+
+        const text =
+          await response.text();
+
+        let data = null;
+
+        try {
+          data = text
+            ? JSON.parse(text)
+            : null;
+        } catch {
+          data =
+            text || null;
+        }
+
+        if (!response.ok) {
+          console.error(
+            "Profile save failed:",
+            response.status,
+            data
+          );
+
+          setMessage(
+            typeof data ===
+              "string"
+              ? data
+              : data?.message ||
+                  data?.error ||
+                  `Unable to save profile (HTTP ${response.status}).`
+          );
+
+          return;
+        }
+
+        setProfile(data);
+        setEditingProfile(
+          false
+        );
+
+        setMessage(
+          "Professional profile saved successfully! ✅"
+        );
+
+        await fetchProfile(
+          user.id
+        );
+      } catch (error) {
+        console.error(
+          "Profile save error:",
+          error
+        );
+
+        setMessage(
+          "Cannot connect to profile backend. Make sure Spring Boot is running on port 8080."
+        );
+      }
+    };
+
+  const openProfile = async () => {
+    setShowProfile(true);
+    setEditingProfile(
+      false
+    );
+    setMessage("");
+
+    if (
+      user?.role ===
+        "JOB_SEEKER" &&
+      user?.id
+    ) {
+      await fetchProfile(
+        user.id
+      );
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const closeProfile = () => {
+    setShowProfile(false);
+    setEditingProfile(
+      false
+    );
+    setMessage("");
+  };
 
   /* =========================================================
      LOGOUT
      ========================================================= */
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "user"
+    );
 
     setIsLoggedIn(false);
     setUser(null);
@@ -1406,6 +2229,20 @@ function App() {
     setShowProfile(false);
     setProfile(null);
 
+    setEmployerProfile(
+      null
+    );
+
+    setEmployerProfileForm(
+      {
+        companyName: "",
+        companyDescription:
+          "",
+        website: "",
+        location: "",
+      }
+    );
+
     setMessage("");
 
     setResumeFile(null);
@@ -1413,7 +2250,10 @@ function App() {
 
     resetFilters();
     resetJobForm();
-    setProfileForm(emptyProfileForm());
+
+    setProfileForm(
+      emptyProfileForm()
+    );
 
     setIsLogin(true);
   };
@@ -1423,34 +2263,56 @@ function App() {
      ========================================================= */
 
   useEffect(() => {
-    if (!isLoggedIn || !user) return;
+    if (!isLoggedIn || !user)
+      return;
 
-    if (user.role === "RECRUITER") {
-      fetchRecruiterJobs(user.id);
+    if (
+      user.role ===
+      "RECRUITER"
+    ) {
+      fetchRecruiterJobs(
+        user.id
+      );
+
+      fetchEmployerProfile(
+        user.id
+      );
     } else {
       fetchJobs();
-      fetchApplications(user.email);
-      fetchProfile(user.id);
+
+      fetchApplications(
+        user.email
+      );
+
+      fetchProfile(
+        user.id
+      );
     }
   }, [isLoggedIn, user]);
 
   useEffect(() => {
-  if (
-    !isLoggedIn ||
-    !user ||
-    user.role !== "JOB_SEEKER"
-  ) {
-    return;
-  }
+    if (
+      !isLoggedIn ||
+      !user ||
+      user.role !==
+        "JOB_SEEKER"
+    ) {
+      return;
+    }
 
-  const interval = setInterval(() => {
-    fetchApplications(user.email);
-  }, 10000);
+    const interval =
+      setInterval(() => {
+        fetchApplications(
+          user.email
+        );
+      }, 10000);
 
-  return () => {
-    clearInterval(interval);
-  };
-}, [isLoggedIn, user]);
+    return () => {
+      clearInterval(
+        interval
+      );
+    };
+  }, [isLoggedIn, user]);
 
   /* =========================================================
      PROFILE PAGE
@@ -1458,10 +2320,12 @@ function App() {
 
   if (
     isLoggedIn &&
-    user?.role === "JOB_SEEKER" &&
+    user?.role ===
+      "JOB_SEEKER" &&
     showProfile
   ) {
-    const completeness = calculateProfileCompleteness();
+    const completeness =
+      calculateProfileCompleteness();
 
     return (
       <div className="app">
@@ -1469,22 +2333,34 @@ function App() {
 
           <div className="dashboard-header">
             <div>
-              <h1>JobPortal</h1>
-              <p>Professional Profile</p>
+              <h1>
+                JobPortal
+              </h1>
+
+              <p>
+                Professional Profile
+              </p>
             </div>
 
             <div>
               <button
                 className="refresh-btn"
-                onClick={closeProfile}
-                style={{ marginRight: "10px" }}
+                onClick={
+                  closeProfile
+                }
+                style={{
+                  marginRight:
+                    "10px",
+                }}
               >
                 ← Back to Jobs
               </button>
 
               <button
                 className="logout-btn"
-                onClick={handleLogout}
+                onClick={
+                  handleLogout
+                }
               >
                 Logout
               </button>
@@ -1503,7 +2379,8 @@ function App() {
                 Loading your professional profile...
               </p>
             </div>
-          ) : editingProfile || !profile ? (
+          ) : editingProfile ||
+            !profile ? (
             <div className="jobs-section">
 
               <h2>
@@ -1517,105 +2394,244 @@ function App() {
                 understand your skills and career goals.
               </p>
 
-              <div style={{ marginBottom: "20px", padding: "15px", borderRadius: "10px", background: "#f5f5f5" }}>
-                <strong>Profile Completeness: {completeness}%</strong>
-                <div style={{ marginTop: "8px", height: "10px", background: "#ddd", borderRadius: "10px", overflow: "hidden" }}>
-                  <div style={{ width: `${completeness}%`, height: "100%", background: "#2563eb" }} />
+              <div
+                style={{
+                  marginBottom:
+                    "20px",
+                  padding:
+                    "15px",
+                  borderRadius:
+                    "10px",
+                  background:
+                    "#f5f5f5",
+                }}
+              >
+                <strong>
+                  Profile Completeness:{" "}
+                  {completeness}%
+                </strong>
+
+                <div
+                  style={{
+                    marginTop:
+                      "8px",
+                    height:
+                      "10px",
+                    background:
+                      "#ddd",
+                    borderRadius:
+                      "10px",
+                    overflow:
+                      "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${completeness}%`,
+                      height:
+                        "100%",
+                      background:
+                        "#2563eb",
+                    }}
+                  />
                 </div>
               </div>
 
-              <form onSubmit={handleProfileSubmit}>
-
-                <label>Professional Headline</label>
+              <form
+                onSubmit={
+                  handleProfileSubmit
+                }
+              >
+                <label>
+                  Professional Headline
+                </label>
 
                 <input
                   type="text"
                   name="headline"
                   placeholder="Example: Java Developer | AI & Data Science Student"
-                  value={profileForm.headline}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.headline
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                   required
                 />
 
-                <label>Phone</label>
+                <label>
+                  Phone
+                </label>
 
                 <input
                   type="tel"
                   name="phone"
                   placeholder="Enter your phone number"
-                  value={profileForm.phone}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.phone
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>Current Location</label>
+                <label>
+                  Current Location
+                </label>
 
                 <input
                   type="text"
                   name="location"
                   placeholder="Example: Chennai"
-                  value={profileForm.location}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.location
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>About You</label>
+                <label>
+                  About You
+                </label>
 
                 <textarea
                   name="about"
                   rows="6"
                   placeholder="Write about yourself, your skills, interests and career goals..."
-                  value={profileForm.about}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.about
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>Skills</label>
-                <textarea name="skills" rows="3" placeholder="Example: Java, Spring Boot, SQL, React" value={profileForm.skills} onChange={handleProfileChange} />
+                <label>
+                  Skills
+                </label>
 
-                <label>Education</label>
-                <textarea name="education" rows="3" placeholder="Example: B.Tech AI & Data Science" value={profileForm.education} onChange={handleProfileChange} />
+                <textarea
+                  name="skills"
+                  rows="3"
+                  placeholder="Example: Java, Spring Boot, SQL, React"
+                  value={
+                    profileForm.skills
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
+                />
 
-                <label>Experience</label>
-                <textarea name="experience" rows="3" placeholder="Example: Fresher / Internship / Work experience" value={profileForm.experience} onChange={handleProfileChange} />
+                <label>
+                  Education
+                </label>
 
-                <label>Projects</label>
-                <textarea name="projects" rows="4" placeholder="Mention your important projects" value={profileForm.projects} onChange={handleProfileChange} />
+                <textarea
+                  name="education"
+                  rows="3"
+                  placeholder="Example: B.Tech AI & Data Science"
+                  value={
+                    profileForm.education
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
+                />
 
-                <label>Preferred Job Role</label>
+                <label>
+                  Experience
+                </label>
+
+                <textarea
+                  name="experience"
+                  rows="3"
+                  placeholder="Example: Fresher / Internship / Work experience"
+                  value={
+                    profileForm.experience
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
+                />
+
+                <label>
+                  Projects
+                </label>
+
+                <textarea
+                  name="projects"
+                  rows="4"
+                  placeholder="Mention your important projects"
+                  value={
+                    profileForm.projects
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
+                />
+
+                <label>
+                  Preferred Job Role
+                </label>
 
                 <input
                   type="text"
                   name="preferredJobRole"
                   placeholder="Example: Java Developer"
-                  value={profileForm.preferredJobRole}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.preferredJobRole
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>Preferred Location</label>
+                <label>
+                  Preferred Location
+                </label>
 
                 <input
                   type="text"
                   name="preferredLocation"
                   placeholder="Example: Chennai / Bangalore / Remote"
-                  value={profileForm.preferredLocation}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.preferredLocation
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>Expected Annual Salary</label>
+                <label>
+                  Expected Annual Salary
+                </label>
 
                 <input
                   type="number"
                   name="expectedSalary"
                   placeholder="Example: 600000"
                   min="0"
-                  value={profileForm.expectedSalary}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.expectedSalary
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 />
 
-                <label>Preferred Job Type</label>
+                <label>
+                  Preferred Job Type
+                </label>
 
                 <select
                   name="jobType"
-                  value={profileForm.jobType}
-                  onChange={handleProfileChange}
+                  value={
+                    profileForm.jobType
+                  }
+                  onChange={
+                    handleProfileChange
+                  }
                 >
                   <option value="Full Time">
                     Full Time
@@ -1646,11 +2662,15 @@ function App() {
                     type="button"
                     className="refresh-btn"
                     onClick={() =>
-                      setEditingProfile(false)
+                      setEditingProfile(
+                        false
+                      )
                     }
                     style={{
-                      width: "100%",
-                      marginTop: "10px",
+                      width:
+                        "100%",
+                      marginTop:
+                        "10px",
                     }}
                   >
                     Cancel
@@ -1664,11 +2684,15 @@ function App() {
 
                 <div
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    display:
+                      "flex",
+                    justifyContent:
+                      "space-between",
+                    alignItems:
+                      "center",
                     gap: "15px",
-                    flexWrap: "wrap",
+                    flexWrap:
+                      "wrap",
                   }}
                 >
                   <div>
@@ -1691,7 +2715,9 @@ function App() {
                   <button
                     className="submit-btn"
                     onClick={() =>
-                      setEditingProfile(true)
+                      setEditingProfile(
+                        true
+                      )
                     }
                   >
                     Edit Profile ✏️
@@ -1701,7 +2727,9 @@ function App() {
               </div>
 
               <div className="jobs-section">
-                <h2>About</h2>
+                <h2>
+                  About
+                </h2>
 
                 <p>
                   {profile.about ||
@@ -1710,27 +2738,53 @@ function App() {
               </div>
 
               <div className="jobs-section">
-                <h2>Skills 🛠️</h2>
-                <p>{profile.skills || "No skills added yet."}</p>
+                <h2>
+                  Skills 🛠️
+                </h2>
+
+                <p>
+                  {profile.skills ||
+                    "No skills added yet."}
+                </p>
               </div>
 
               <div className="jobs-section">
-                <h2>Education 🎓</h2>
-                <p>{profile.education || "No education details added yet."}</p>
+                <h2>
+                  Education 🎓
+                </h2>
+
+                <p>
+                  {profile.education ||
+                    "No education details added yet."}
+                </p>
               </div>
 
               <div className="jobs-section">
-                <h2>Experience 💼</h2>
-                <p>{profile.experience || "No experience details added yet."}</p>
+                <h2>
+                  Experience 💼
+                </h2>
+
+                <p>
+                  {profile.experience ||
+                    "No experience details added yet."}
+                </p>
               </div>
 
               <div className="jobs-section">
-                <h2>Projects 🚀</h2>
-                <p>{profile.projects || "No projects added yet."}</p>
+                <h2>
+                  Projects 🚀
+                </h2>
+
+                <p>
+                  {profile.projects ||
+                    "No projects added yet."}
+                </p>
               </div>
 
               <div className="jobs-section">
-                <h2>Career Preferences 🎯</h2>
+                <h2>
+                  Career Preferences 🎯
+                </h2>
 
                 <div className="job-meta">
                   <span>
@@ -1751,7 +2805,9 @@ function App() {
                   {profile.expectedSalary
                     ? `₹${Number(
                         profile.expectedSalary
-                      ).toLocaleString("en-IN")} / year`
+                      ).toLocaleString(
+                        "en-IN"
+                      )} / year`
                     : "Not specified"}
                 </div>
 
@@ -1763,15 +2819,23 @@ function App() {
               </div>
 
               <div className="jobs-section">
-                <h2>Contact Information 📞</h2>
+                <h2>
+                  Contact Information 📞
+                </h2>
 
                 <p>
-                  📧 <strong>Email:</strong>{" "}
+                  📧{" "}
+                  <strong>
+                    Email:
+                  </strong>{" "}
                   {user.email}
                 </p>
 
                 <p>
-                  📱 <strong>Phone:</strong>{" "}
+                  📱{" "}
+                  <strong>
+                    Phone:
+                  </strong>{" "}
                   {profile.phone ||
                     "Not added"}
                 </p>
@@ -1789,7 +2853,8 @@ function App() {
 
   if (
     isLoggedIn &&
-    user?.role === "RECRUITER"
+    user?.role ===
+      "RECRUITER"
   ) {
     return (
       <div className="app">
@@ -1797,13 +2862,20 @@ function App() {
 
           <div className="dashboard-header">
             <div>
-              <h1>JobPortal</h1>
-              <p>Recruiter Dashboard</p>
+              <h1>
+                JobPortal
+              </h1>
+
+              <p>
+                Recruiter Dashboard
+              </p>
             </div>
 
             <button
               className="logout-btn"
-              onClick={handleLogout}
+              onClick={
+                handleLogout
+              }
             >
               Logout
             </button>
@@ -1826,105 +2898,278 @@ function App() {
             </div>
           )}
 
+          {/* ================= EMPLOYER PROFILE ================= */}
+
           <div className="jobs-section">
+
+            <h2>
+              Employer Profile 🏢
+            </h2>
+
+            {loadingEmployerProfile ? (
+              <p className="status-text">
+                Loading employer profile...
+              </p>
+            ) : (
+              <form
+                onSubmit={
+                  handleEmployerProfileSubmit
+                }
+              >
+
+                <label>
+                  Company Name
+                </label>
+
+                <input
+                  type="text"
+                  name="companyName"
+                  placeholder="Example: TCS"
+                  value={
+                    employerProfileForm.companyName
+                  }
+                  onChange={
+                    handleEmployerProfileChange
+                  }
+                  required
+                />
+
+                <label>
+                  Company Description
+                </label>
+
+                <textarea
+                  name="companyDescription"
+                  rows="4"
+                  placeholder="Describe your company..."
+                  value={
+                    employerProfileForm.companyDescription
+                  }
+                  onChange={
+                    handleEmployerProfileChange
+                  }
+                />
+
+                <label>
+                  Website
+                </label>
+
+                <input
+                  type="url"
+                  name="website"
+                  placeholder="https://example.com"
+                  value={
+                    employerProfileForm.website
+                  }
+                  onChange={
+                    handleEmployerProfileChange
+                  }
+                />
+
+                <label>
+                  Location
+                </label>
+
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Example: Chennai"
+                  value={
+                    employerProfileForm.location
+                  }
+                  onChange={
+                    handleEmployerProfileChange
+                  }
+                  required
+                />
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                >
+                  {employerProfile
+                    ? "Update Employer Profile"
+                    : "Save Employer Profile"}
+                </button>
+
+              </form>
+            )}
+          </div>
+
+          <div className="jobs-section">
+
             <h2>
               {editingJobId !== null
                 ? "Edit Job ✏️"
                 : "Post a New Job ➕"}
             </h2>
 
-            <form onSubmit={handleJobSubmit}>
+            <form
+              onSubmit={
+                handleJobSubmit
+              }
+            >
 
-              <label>Job Title</label>
+              <label>
+                Job Title
+              </label>
 
               <input
                 type="text"
                 name="title"
                 placeholder="Example: Java Developer"
-                value={jobForm.title}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.title
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 required
               />
 
-              <label>Company</label>
+              <label>
+                Company
+              </label>
 
               <input
                 type="text"
                 name="company"
                 placeholder="Example: TCS"
-                value={jobForm.company}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.company
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 required
               />
 
-              <label>Location</label>
+              <label>
+                Location
+              </label>
 
               <input
                 type="text"
                 name="location"
                 placeholder="Example: Chennai"
-                value={jobForm.location}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.location
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 required
               />
 
-              <label>Annual Salary</label>
+              <label>
+                Annual Salary
+              </label>
 
               <input
                 type="number"
                 name="salary"
                 placeholder="Example: 600000"
-                value={jobForm.salary}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.salary
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 min="0"
                 required
               />
 
-              <label>Job Type</label>
+              <label>
+                Job Type
+              </label>
 
               <select
                 name="jobType"
-                value={jobForm.jobType}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.jobType
+                }
+                onChange={
+                  handleJobFormChange
+                }
               >
-                <option>Full Time</option>
-                <option>Part Time</option>
-                <option>Internship</option>
-                <option>Contract</option>
+                <option>
+                  Full Time
+                </option>
+
+                <option>
+                  Part Time
+                </option>
+
+                <option>
+                  Internship
+                </option>
+
+                <option>
+                  Contract
+                </option>
               </select>
 
-              <label>Experience</label>
+              <label>
+                Experience
+              </label>
 
               <select
                 name="experience"
-                value={jobForm.experience}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.experience
+                }
+                onChange={
+                  handleJobFormChange
+                }
               >
-                <option>Fresher</option>
-                <option>0-2 Years</option>
-                <option>2-5 Years</option>
-                <option>5+ Years</option>
+                <option>
+                  Fresher
+                </option>
+
+                <option>
+                  0-2 Years
+                </option>
+
+                <option>
+                  2-5 Years
+                </option>
+
+                <option>
+                  5+ Years
+                </option>
               </select>
 
-              <label>Required Skills</label>
+              <label>
+                Required Skills
+              </label>
 
               <input
                 type="text"
                 name="skills"
                 placeholder="Example: Java, Spring Boot, MySQL"
-                value={jobForm.skills}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.skills
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 required
               />
 
-              <label>Job Description</label>
+              <label>
+                Job Description
+              </label>
 
               <textarea
                 name="description"
                 rows="5"
                 placeholder="Enter job description..."
-                value={jobForm.description}
-                onChange={handleJobFormChange}
+                value={
+                  jobForm.description
+                }
+                onChange={
+                  handleJobFormChange
+                }
                 required
               />
 
@@ -1941,10 +3186,14 @@ function App() {
                 <button
                   type="button"
                   className="refresh-btn"
-                  onClick={resetJobForm}
+                  onClick={
+                    resetJobForm
+                  }
                   style={{
-                    width: "100%",
-                    marginTop: "10px",
+                    width:
+                      "100%",
+                    marginTop:
+                      "10px",
                   }}
                 >
                   Cancel Edit
@@ -1956,23 +3205,30 @@ function App() {
           <div className="jobs-section">
 
             <div className="section-header">
-              <h2>Your Job Postings 💼</h2>
+
+              <h2>
+                Your Job Postings 💼
+              </h2>
 
               <button
                 onClick={() =>
-                  fetchRecruiterJobs(user.id)
+                  fetchRecruiterJobs(
+                    user.id
+                  )
                 }
                 className="refresh-btn"
               >
                 Refresh Jobs
               </button>
+
             </div>
 
             {loadingJobs ? (
               <p className="status-text">
                 Loading jobs...
               </p>
-            ) : jobs.length === 0 ? (
+            ) : jobs.length ===
+              0 ? (
               <p className="status-text">
                 No jobs posted yet.
               </p>
@@ -1986,23 +3242,31 @@ function App() {
                   >
 
                     <div className="job-card-top">
+
                       <div>
-                        <h3>{job.title}</h3>
+
+                        <h3>
+                          {job.title}
+                        </h3>
 
                         <p className="company-name">
                           🏢 {job.company}
                         </p>
+
                       </div>
 
                       <span className="job-type-badge">
                         {job.jobType ||
                           "Full Time"}
                       </span>
+
                     </div>
 
                     <div className="job-meta">
+
                       <span>
-                        📍 {job.location}
+                        📍{" "}
+                        {job.location}
                       </span>
 
                       <span>
@@ -2010,29 +3274,62 @@ function App() {
                         {job.experience ||
                           "Fresher"}
                       </span>
+
                     </div>
 
                     <div className="salary">
                       💰 ₹
                       {Number(
-                        job.salary || 0
-                      ).toLocaleString("en-IN")}
+                        job.salary ||
+                          0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
                       {" / year"}
                     </div>
 
-                    {user?.role === "JOB_SEEKER" && (
+                    {user?.role ===
+                      "JOB_SEEKER" && (
                       <div
                         style={{
-                          margin: "10px 0",
-                          padding: "10px 12px",
-                          borderRadius: "10px",
-                          background: "#f8fafc",
-                          ...getMatchStyle(getJobMatch(job).score),
+                          margin:
+                            "10px 0",
+                          padding:
+                            "10px 12px",
+                          borderRadius:
+                            "10px",
+                          background:
+                            "#f8fafc",
+                          ...getMatchStyle(
+                            getJobMatch(
+                              job
+                            ).score
+                          ),
                         }}
                       >
-                        <strong>🎯 {getJobMatch(job).score}% Match</strong>
-                        <div style={{ fontSize: "13px", marginTop: "4px" }}>
-                          {getJobMatch(job).label}
+                        <strong>
+                          🎯{" "}
+                          {
+                            getJobMatch(
+                              job
+                            ).score
+                          }%
+                          Match
+                        </strong>
+
+                        <div
+                          style={{
+                            fontSize:
+                              "13px",
+                            marginTop:
+                              "4px",
+                          }}
+                        >
+                          {
+                            getJobMatch(
+                              job
+                            ).label
+                          }
                         </div>
                       </div>
                     )}
@@ -2042,8 +3339,15 @@ function App() {
                         {job.skills
                           .split(",")
                           .map(
-                            (skill, index) => (
-                              <span key={index}>
+                            (
+                              skill,
+                              index
+                            ) => (
+                              <span
+                                key={
+                                  index
+                                }
+                              >
                                 {skill.trim()}
                               </span>
                             )
@@ -2052,13 +3356,17 @@ function App() {
                     )}
 
                     <p className="job-description">
-                      {job.description}
+                      {
+                        job.description
+                      }
                     </p>
 
                     <button
                       className="submit-btn"
                       onClick={() =>
-                        handleEditJob(job)
+                        handleEditJob(
+                          job
+                        )
                       }
                     >
                       Edit ✏️
@@ -2067,10 +3375,13 @@ function App() {
                     <button
                       className="logout-btn"
                       onClick={() =>
-                        handleDeleteJob(job.id)
+                        handleDeleteJob(
+                          job.id
+                        )
                       }
                       style={{
-                        marginLeft: "8px",
+                        marginLeft:
+                          "8px",
                       }}
                     >
                       Delete 🗑️
@@ -2085,26 +3396,34 @@ function App() {
                         )
                       }
                       style={{
-                        display: "block",
-                        marginTop: "12px",
-                        width: "100%",
+                        display:
+                          "block",
+                        marginTop:
+                          "12px",
+                        width:
+                          "100%",
                       }}
                     >
                       View Applicants 👥
                     </button>
                   </div>
                 ))}
+
               </div>
             )}
           </div>
 
-          {selectedJobId !== null && (
+          {selectedJobId !==
+            null && (
             <div className="applications-section">
 
               <div className="section-header">
+
                 <h2>
                   Applicants for{" "}
-                  {selectedJobTitle} 👥
+                  {
+                    selectedJobTitle
+                  } 👥
                 </h2>
 
                 <button
@@ -2118,11 +3437,14 @@ function App() {
                 >
                   Refresh Applicants
                 </button>
+
               </div>
 
               <button
                 className="logout-btn"
-                onClick={closeApplicants}
+                onClick={
+                  closeApplicants
+                }
               >
                 Close Applicants
               </button>
@@ -2131,7 +3453,8 @@ function App() {
                 <p className="status-text">
                   Loading applicants...
                 </p>
-              ) : jobApplicants.length === 0 ? (
+              ) : jobApplicants.length ===
+                0 ? (
                 <p className="status-text">
                   No applicants for this job yet.
                 </p>
@@ -2142,7 +3465,9 @@ function App() {
                     (application) => (
                       <div
                         className="application-card"
-                        key={application.id}
+                        key={
+                          application.id
+                        }
                       >
 
                         <h3>
@@ -2164,8 +3489,12 @@ function App() {
                           <strong>
                             Job:
                           </strong>{" "}
-                          {application.job?.title ||
-                            selectedJobTitle}
+                          {
+                            application
+                              .job
+                              ?.title ||
+                            selectedJobTitle
+                          }
                         </p>
 
                         {application.resumeUrl && (
@@ -2186,9 +3515,12 @@ function App() {
                           <strong>
                             Status:
                           </strong>{" "}
+
                           <span className="application-status">
-                            {application.status ||
-                              "APPLIED"}
+                            {
+                              application.status ||
+                              "APPLIED"
+                            }
                           </span>
                         </p>
 
@@ -2231,26 +3563,52 @@ function App() {
                           </button>
 
                           <select
-                            value={application.status || "APPLIED"}
-                            onChange={(e) =>
+                            value={
+                              application.status ||
+                              "APPLIED"
+                            }
+                            onChange={(
+                              e
+                            ) =>
                               updateApplicationStatus(
                                 application.id,
                                 e.target.value
                               )
                             }
                             style={{
-                              marginLeft: "8px",
-                              padding: "7px 10px",
-                              borderRadius: "8px",
-                              border: "1px solid #ccc"
+                              marginLeft:
+                                "8px",
+                              padding:
+                                "7px 10px",
+                              borderRadius:
+                                "8px",
+                              border:
+                                "1px solid #ccc",
                             }}
                           >
-                            <option value="APPLIED">Applied</option>
-                            <option value="VIEWED">Viewed</option>
-                            <option value="SHORTLISTED">Shortlisted</option>
-                            <option value="INTERVIEW">Interview</option>
-                            <option value="SELECTED">Selected</option>
-                            <option value="REJECTED">Rejected</option>
+                            <option value="APPLIED">
+                              Applied
+                            </option>
+
+                            <option value="VIEWED">
+                              Viewed
+                            </option>
+
+                            <option value="SHORTLISTED">
+                              Shortlisted
+                            </option>
+
+                            <option value="INTERVIEW">
+                              Interview
+                            </option>
+
+                            <option value="SELECTED">
+                              Selected
+                            </option>
+
+                            <option value="REJECTED">
+                              Rejected
+                            </option>
                           </select>
 
                         </div>
@@ -2262,7 +3620,6 @@ function App() {
               )}
             </div>
           )}
-
         </div>
       </div>
     );
@@ -2274,28 +3631,37 @@ function App() {
 
   if (
     isLoggedIn &&
-    user?.role === "JOB_SEEKER"
+    user?.role ===
+      "JOB_SEEKER"
   ) {
     return (
       <div className="app">
         <div className="dashboard">
 
           <div className="dashboard-header">
+
             <div>
-              <h1>JobPortal</h1>
+
+              <h1>
+                JobPortal
+              </h1>
 
               <p>
                 Find your next opportunity
               </p>
+
             </div>
 
             <div>
 
               <button
                 className="submit-btn"
-                onClick={openProfile}
+                onClick={
+                  openProfile
+                }
                 style={{
-                  marginRight: "10px",
+                  marginRight:
+                    "10px",
                 }}
               >
                 My Profile 👤
@@ -2303,12 +3669,15 @@ function App() {
 
               <button
                 className="logout-btn"
-                onClick={handleLogout}
+                onClick={
+                  handleLogout
+                }
               >
                 Logout
               </button>
 
             </div>
+
           </div>
 
           <div className="welcome-section">
@@ -2324,9 +3693,12 @@ function App() {
 
             <button
               className="refresh-btn"
-              onClick={openProfile}
+              onClick={
+                openProfile
+              }
               style={{
-                marginTop: "15px",
+                marginTop:
+                  "15px",
               }}
             >
               Complete Your Professional Profile →
@@ -2344,7 +3716,9 @@ function App() {
 
           <div className="jobs-section resume-section">
 
-            <h2>Your Resume 📄</h2>
+            <h2>
+              Your Resume 📄
+            </h2>
 
             <p>
               Upload your latest resume before
@@ -2354,13 +3728,17 @@ function App() {
             <input
               type="file"
               accept=".pdf,.doc,.docx"
-              onChange={handleResumeChange}
+              onChange={
+                handleResumeChange
+              }
             />
 
             {resumeName && (
               <p className="resume-selected">
                 Selected Resume:{" "}
-                <strong>{resumeName}</strong>
+                <strong>
+                  {resumeName}
+                </strong>
               </p>
             )}
 
@@ -2372,10 +3750,14 @@ function App() {
 
             <div className="section-header">
 
-              <h2>Find Jobs 💼</h2>
+              <h2>
+                Find Jobs 💼
+              </h2>
 
               <button
-                onClick={fetchJobs}
+                onClick={
+                  fetchJobs
+                }
                 className="refresh-btn"
               >
                 Refresh Jobs
@@ -2388,34 +3770,48 @@ function App() {
               <input
                 type="text"
                 placeholder="🔎 Search job, company or skill..."
-                value={searchTerm}
+                value={
+                  searchTerm
+                }
                 onChange={(e) =>
-                  setSearchTerm(e.target.value)
+                  setSearchTerm(
+                    e.target.value
+                  )
                 }
               />
 
               <input
                 type="text"
                 placeholder="📍 Location"
-                value={locationFilter}
+                value={
+                  locationFilter
+                }
                 onChange={(e) =>
-                  setLocationFilter(e.target.value)
+                  setLocationFilter(
+                    e.target.value
+                  )
                 }
               />
 
               <input
                 type="number"
                 placeholder="💰 Minimum salary"
-                value={minSalary}
+                value={
+                  minSalary
+                }
                 onChange={(e) =>
-                  setMinSalary(e.target.value)
+                  setMinSalary(
+                    e.target.value
+                  )
                 }
               />
 
               <button
                 type="button"
                 className="refresh-btn"
-                onClick={resetFilters}
+                onClick={
+                  resetFilters
+                }
               >
                 Reset
               </button>
@@ -2423,14 +3819,19 @@ function App() {
             </div>
 
             {!loadingJobs &&
-              jobs.length > 0 && (
+              jobs.length >
+                0 && (
                 <p className="filter-result">
                   Showing{" "}
                   <strong>
-                    {filteredJobs.length}
+                    {
+                      filteredJobs.length
+                    }
                   </strong>{" "}
                   of{" "}
-                  <strong>{jobs.length}</strong>{" "}
+                  <strong>
+                    {jobs.length}
+                  </strong>{" "}
                   available jobs
                 </p>
               )}
@@ -2439,7 +3840,8 @@ function App() {
               <p className="status-text">
                 Finding available jobs...
               </p>
-            ) : filteredJobs.length === 0 ? (
+            ) : filteredJobs.length ===
+              0 ? (
               <p className="status-text">
                 No jobs match your current
                 search or filters.
@@ -2447,118 +3849,155 @@ function App() {
             ) : (
               <div className="jobs-grid">
 
-                {filteredJobs.map((job) => (
-                  <div
-                    className="job-card"
-                    key={job.id}
-                  >
-
-                    <div className="job-card-top">
-
-                      <div>
-                        <h3>{job.title}</h3>
-
-                        <p className="company-name">
-                          🏢 {job.company}
-                        </p>
-                      </div>
-
-                      <span className="job-type-badge">
-                        {job.jobType ||
-                          "Full Time"}
-                      </span>
-
-                    </div>
-
-                    <div className="job-meta">
-
-                      <span>
-                        📍 {job.location}
-                      </span>
-
-                      <span>
-                        💼{" "}
-                        {job.experience ||
-                          "Fresher"}
-                      </span>
-
-                    </div>
-
-                    <div className="salary">
-                      💰 ₹
-                      {Number(
-                        job.salary || 0
-                      ).toLocaleString("en-IN")}
-                      {" / year"}
-                    </div>
-
-                    {job.skills && (
-                      <div className="skills">
-                        {job.skills
-                          .split(",")
-                          .map(
-                            (skill, index) => (
-                              <span key={index}>
-                                {skill.trim()}
-                              </span>
-                            )
-                          )}
-                      </div>
-                    )}
-
-                    <p className="job-description">
-                      {job.description}
-                    </p>
-
-                    {job.postedDate && (
-                      <p className="posted-date">
-                        🕐 Posted{" "}
-                        {new Date(
-                          job.postedDate
-                        ).toLocaleDateString(
-                          "en-IN"
-                        )}
-                      </p>
-                    )}
-
+                {filteredJobs.map(
+                  (job) => (
                     <div
-                      className="job-card-actions"
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        flexWrap: "wrap",
-                      }}
+                      className="job-card"
+                      key={
+                        job.id
+                      }
                     >
 
-                      <button
-                        className="refresh-btn"
-                        onClick={() =>
-                          handleViewJob(job)
-                        }
-                      >
-                        View Details 👁️
-                      </button>
+                      <div className="job-card-top">
 
-                      <button
-                        className="apply-btn"
-                        onClick={() =>
-                          handleApply(job.id)
-                        }
-                        disabled={appliedJobs.includes(
-                          job.id
+                        <div>
+
+                          <h3>
+                            {job.title}
+                          </h3>
+
+                          <p className="company-name">
+                            🏢{" "}
+                            {
+                              job.company
+                            }
+                          </p>
+
+                        </div>
+
+                        <span className="job-type-badge">
+                          {job.jobType ||
+                            "Full Time"}
+                        </span>
+
+                      </div>
+
+                      <div className="job-meta">
+
+                        <span>
+                          📍{" "}
+                          {
+                            job.location
+                          }
+                        </span>
+
+                        <span>
+                          💼{" "}
+                          {
+                            job.experience ||
+                            "Fresher"
+                          }
+                        </span>
+
+                      </div>
+
+                      <div className="salary">
+                        💰 ₹
+                        {Number(
+                          job.salary ||
+                            0
+                        ).toLocaleString(
+                          "en-IN"
                         )}
+                        {" / year"}
+                      </div>
+
+                      {job.skills && (
+                        <div className="skills">
+                          {job.skills
+                            .split(
+                              ","
+                            )
+                            .map(
+                              (
+                                skill,
+                                index
+                              ) => (
+                                <span
+                                  key={
+                                    index
+                                  }
+                                >
+                                  {skill.trim()}
+                                </span>
+                              )
+                            )}
+                        </div>
+                      )}
+
+                      <p className="job-description">
+                        {
+                          job.description
+                        }
+                      </p>
+
+                      {job.postedDate && (
+                        <p className="posted-date">
+                          🕐 Posted{" "}
+                          {new Date(
+                            job.postedDate
+                          ).toLocaleDateString(
+                            "en-IN"
+                          )}
+                        </p>
+                      )}
+
+                      <div
+                        className="job-card-actions"
+                        style={{
+                          display:
+                            "flex",
+                          gap:
+                            "10px",
+                          flexWrap:
+                            "wrap",
+                        }}
                       >
-                        {appliedJobs.includes(
-                          job.id
-                        )
-                          ? "Applied ✅"
-                          : "Apply Now"}
-                      </button>
+
+                        <button
+                          className="refresh-btn"
+                          onClick={() =>
+                            handleViewJob(
+                              job
+                            )
+                          }
+                        >
+                          View Details 👁️
+                        </button>
+
+                        <button
+                          className="apply-btn"
+                          onClick={() =>
+                            handleApply(
+                              job.id
+                            )
+                          }
+                          disabled={appliedJobs.includes(
+                            job.id
+                          )}
+                        >
+                          {appliedJobs.includes(
+                            job.id
+                          )
+                            ? "Applied ✅"
+                            : "Apply Now"}
+                        </button>
+
+                      </div>
 
                     </div>
-
-                  </div>
-                ))}
+                  )
+                )}
 
               </div>
             )}
@@ -2574,12 +4013,16 @@ function App() {
                 <div className="section-header">
 
                   <h2>
-                    {selectedJob.title}
+                    {
+                      selectedJob.title
+                    }
                   </h2>
 
                   <button
                     className="logout-btn"
-                    onClick={closeJobDetails}
+                    onClick={
+                      closeJobDetails
+                    }
                   >
                     Close
                   </button>
@@ -2587,71 +4030,177 @@ function App() {
                 </div>
 
                 <h3>
-                  🏢 {selectedJob.company}
+                  🏢{" "}
+                  {
+                    selectedJob.company
+                  }
                 </h3>
 
                 <p>
-                  📍 {selectedJob.location}
+                  📍{" "}
+                  {
+                    selectedJob.location
+                  }
                 </p>
 
                 <p>
                   💼{" "}
-                  {selectedJob.jobType ||
-                    "Full Time"}
+                  {
+                    selectedJob.jobType ||
+                    "Full Time"
+                  }
                 </p>
 
                 <p>
                   💰 ₹
                   {Number(
-                    selectedJob.salary || 0
-                  ).toLocaleString("en-IN")}
+                    selectedJob.salary ||
+                      0
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
                   {" / year"}
                 </p>
 
                 <p>
                   👨‍💼{" "}
-                  {selectedJob.experience ||
-                    "Fresher"}
+                  {
+                    selectedJob.experience ||
+                    "Fresher"
+                  }
                 </p>
 
-                {user?.role === "JOB_SEEKER" && (
+                {user?.role ===
+                  "JOB_SEEKER" && (
                   <div
                     style={{
-                      margin: "20px 0",
-                      padding: "16px",
-                      borderRadius: "12px",
-                      background: "#f8fafc",
-                      ...getMatchStyle(getJobMatch(selectedJob).score),
+                      margin:
+                        "20px 0",
+                      padding:
+                        "16px",
+                      borderRadius:
+                        "12px",
+                      background:
+                        "#f8fafc",
+                      ...getMatchStyle(
+                        getJobMatch(
+                          selectedJob
+                        ).score
+                      ),
                     }}
                   >
-                    <h3 style={{ marginTop: 0 }}>🎯 Your Job Match</h3>
-                    <div style={{ fontSize: "24px", fontWeight: "700" }}>
-                      {getJobMatch(selectedJob).score}%
+                    <h3
+                      style={{
+                        marginTop:
+                          0,
+                      }}
+                    >
+                      🎯 Your Job Match
+                    </h3>
+
+                    <div
+                      style={{
+                        fontSize:
+                          "24px",
+                        fontWeight:
+                          "700",
+                      }}
+                    >
+                      {
+                        getJobMatch(
+                          selectedJob
+                        ).score
+                      }%
                     </div>
-                    <p style={{ marginBottom: "10px" }}>
-                      {getJobMatch(selectedJob).label}
+
+                    <p
+                      style={{
+                        marginBottom:
+                          "10px",
+                      }}
+                    >
+                      {
+                        getJobMatch(
+                          selectedJob
+                        ).label
+                      }
                     </p>
 
-                    {getJobMatch(selectedJob).matchedSkills.length > 0 && (
+                    {getJobMatch(
+                      selectedJob
+                    ).matchedSkills
+                      .length > 0 && (
                       <>
-                        <strong>✅ Skills you match</strong>
-                        <div className="skills" style={{ marginTop: "8px" }}>
-                          {getJobMatch(selectedJob).matchedSkills.map((skill, index) => (
-                            <span key={index}>{skill}</span>
-                          ))}
+                        <strong>
+                          ✅ Skills you match
+                        </strong>
+
+                        <div
+                          className="skills"
+                          style={{
+                            marginTop:
+                              "8px",
+                          }}
+                        >
+                          {getJobMatch(
+                            selectedJob
+                          ).matchedSkills.map(
+                            (
+                              skill,
+                              index
+                            ) => (
+                              <span
+                                key={
+                                  index
+                                }
+                              >
+                                {skill}
+                              </span>
+                            )
+                          )}
                         </div>
                       </>
                     )}
 
-                    {getJobMatch(selectedJob).missingSkills.length > 0 && (
+                    {getJobMatch(
+                      selectedJob
+                    ).missingSkills
+                      .length > 0 && (
                       <>
-                        <strong style={{ display: "block", marginTop: "12px" }}>
+                        <strong
+                          style={{
+                            display:
+                              "block",
+                            marginTop:
+                              "12px",
+                          }}
+                        >
                           ⚠️ Skills to improve
                         </strong>
-                        <div className="skills" style={{ marginTop: "8px" }}>
-                          {getJobMatch(selectedJob).missingSkills.map((skill, index) => (
-                            <span key={index}>{skill}</span>
-                          ))}
+
+                        <div
+                          className="skills"
+                          style={{
+                            marginTop:
+                              "8px",
+                          }}
+                        >
+                          {getJobMatch(
+                            selectedJob
+                          ).missingSkills.map(
+                            (
+                              skill,
+                              index
+                            ) => (
+                              <span
+                                key={
+                                  index
+                                }
+                              >
+                                {skill}
+                              </span>
+                            )
+                          )}
                         </div>
                       </>
                     )}
@@ -2660,14 +4209,25 @@ function App() {
 
                 {selectedJob.skills && (
                   <>
-                    <h3>Required Skills</h3>
+                    <h3>
+                      Required Skills
+                    </h3>
 
                     <div className="skills">
                       {selectedJob.skills
-                        .split(",")
+                        .split(
+                          ","
+                        )
                         .map(
-                          (skill, index) => (
-                            <span key={index}>
+                          (
+                            skill,
+                            index
+                          ) => (
+                            <span
+                              key={
+                                index
+                              }
+                            >
                               {skill.trim()}
                             </span>
                           )
@@ -2681,7 +4241,9 @@ function App() {
                 </h3>
 
                 <p>
-                  {selectedJob.description}
+                  {
+                    selectedJob.description
+                  }
                 </p>
 
                 <button
@@ -2732,7 +4294,8 @@ function App() {
               <p className="status-text">
                 Loading your applications...
               </p>
-            ) : applications.length === 0 ? (
+            ) : applications.length ===
+              0 ? (
               <p className="status-text">
                 You haven't applied for any
                 jobs yet.
@@ -2741,15 +4304,23 @@ function App() {
               <div className="applications-grid">
 
                 {applications.map(
-                  (application) => (
+                  (
+                    application
+                  ) => (
                     <div
                       className="application-card"
-                      key={application.id}
+                      key={
+                        application.id
+                      }
                     >
 
                       <h3>
-                        {application.job?.title ||
-                          "Job Application"}
+                        {
+                          application
+                            .job
+                            ?.title ||
+                          "Job Application"
+                        }
                       </h3>
 
                       {application.job && (
@@ -2759,7 +4330,8 @@ function App() {
                               Company:
                             </strong>{" "}
                             {
-                              application.job
+                              application
+                                .job
                                 .company
                             }
                           </p>
@@ -2769,7 +4341,8 @@ function App() {
                               Location:
                             </strong>{" "}
                             {
-                              application.job
+                              application
+                                .job
                                 .location
                             }
                           </p>
@@ -2780,8 +4353,10 @@ function App() {
                             </strong>{" "}
                             ₹
                             {Number(
-                              application.job
-                                .salary || 0
+                              application
+                                .job
+                                .salary ||
+                                0
                             ).toLocaleString(
                               "en-IN"
                             )}
@@ -2795,12 +4370,16 @@ function App() {
                         </strong>{" "}
 
                         <span className="application-status">
-                          {application.status ||
-                            "APPLIED"}
+                          {
+                            application.status ||
+                            "APPLIED"
+                          }
                         </span>
                       </p>
 
-                      {renderApplicationTracker(application)}
+                      {renderApplicationTracker(
+                        application
+                      )}
 
                       {application.resumeUrl && (
                         <p>
@@ -2858,7 +4437,9 @@ function App() {
 
         <div className="logo">
 
-          <h1>JobPortal</h1>
+          <h1>
+            JobPortal
+          </h1>
 
           <p>
             Find opportunities. Build your career.
@@ -2869,7 +4450,11 @@ function App() {
         <div className="tabs">
 
           <button
-            className={isLogin ? "active" : ""}
+            className={
+              isLogin
+                ? "active"
+                : ""
+            }
             onClick={() => {
               setIsLogin(true);
               setMessage("");
@@ -2879,7 +4464,11 @@ function App() {
           </button>
 
           <button
-            className={!isLogin ? "active" : ""}
+            className={
+              !isLogin
+                ? "active"
+                : ""
+            }
             onClick={() => {
               setIsLogin(false);
               setMessage("");
@@ -2897,35 +4486,51 @@ function App() {
         )}
 
         {isLogin ? (
-          <form onSubmit={handleLogin}>
+          <form
+            onSubmit={
+              handleLogin
+            }
+          >
 
-            <h2>Welcome Back 👋</h2>
+            <h2>
+              Welcome Back 👋
+            </h2>
 
-            <label>Email</label>
+            <label>
+              Email
+            </label>
 
             <input
               type="email"
               placeholder="Enter your email"
-              value={loginData.email}
+              value={
+                loginData.email
+              }
               onChange={(e) =>
                 setLoginData({
                   ...loginData,
-                  email: e.target.value,
+                  email:
+                    e.target.value,
                 })
               }
               required
             />
 
-            <label>Password</label>
+            <label>
+              Password
+            </label>
 
             <input
               type="password"
               placeholder="Enter your password"
-              value={loginData.password}
+              value={
+                loginData.password
+              }
               onChange={(e) =>
                 setLoginData({
                   ...loginData,
-                  password: e.target.value,
+                  password:
+                    e.target.value,
                 })
               }
               required
@@ -2943,7 +4548,9 @@ function App() {
 
               <span
                 onClick={() => {
-                  setIsLogin(false);
+                  setIsLogin(
+                    false
+                  );
                   setMessage("");
                 }}
               >
@@ -2953,69 +4560,94 @@ function App() {
 
           </form>
         ) : (
-          <form onSubmit={handleRegister}>
+          <form
+            onSubmit={
+              handleRegister
+            }
+          >
 
             <h2>
               Create Your Account 📝
             </h2>
 
-            <label>Full Name</label>
+            <label>
+              Full Name
+            </label>
 
             <input
               type="text"
               placeholder="Enter your full name"
-              value={registerData.name}
+              value={
+                registerData.name
+              }
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
-                  name: e.target.value,
+                  name:
+                    e.target.value,
                 })
               }
               required
             />
 
-            <label>Email</label>
+            <label>
+              Email
+            </label>
 
             <input
               type="email"
               placeholder="Enter your email"
-              value={registerData.email}
+              value={
+                registerData.email
+              }
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
-                  email: e.target.value,
+                  email:
+                    e.target.value,
                 })
               }
               required
             />
 
-            <label>Password</label>
+            <label>
+              Password
+            </label>
 
             <input
               type="password"
               placeholder="Create a password"
-              value={registerData.password}
+              value={
+                registerData.password
+              }
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
-                  password: e.target.value,
+                  password:
+                    e.target.value,
                 })
               }
               minLength="4"
               required
             />
 
-            <label>Account Type</label>
+            <label>
+              Account Type
+            </label>
 
             <select
-              value={registerData.role}
+              value={
+                registerData.role
+              }
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
-                  role: e.target.value,
+                  role:
+                    e.target.value,
                 })
               }
             >
+
               <option value="JOB_SEEKER">
                 Job Seeker
               </option>
@@ -3023,6 +4655,7 @@ function App() {
               <option value="RECRUITER">
                 Recruiter
               </option>
+
             </select>
 
             <button
