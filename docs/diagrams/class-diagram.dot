@@ -1,0 +1,75 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad=0.25, nodesep=0.45, ranksep=0.75, fontname="Arial", label="JOB PORTAL — AS-BUILT CLASS / MODULE DIAGRAM", labelloc=t, fontsize=22];
+  node [shape=plain, fontname="Arial"];
+  edge [fontname="Arial", fontsize=9, color="#444444", penwidth=1.2, arrowsize=0.7];
+
+  entities [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#2563eb">
+      <TR><TD BGCOLOR="#dbeafe"><B>Entities</B></TD></TR>
+      <TR><TD ALIGN="LEFT">User</TD></TR>
+      <TR><TD ALIGN="LEFT">Job</TD></TR>
+      <TR><TD ALIGN="LEFT">Application</TD></TR>
+      <TR><TD ALIGN="LEFT">JobSeekerProfile</TD></TR>
+      <TR><TD ALIGN="LEFT">EmployerProfile</TD></TR>
+    </TABLE>
+  >];
+
+  controllers [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#7c3aed">
+      <TR><TD BGCOLOR="#ede9fe"><B>Controllers</B></TD></TR>
+      <TR><TD ALIGN="LEFT">UserController</TD></TR>
+      <TR><TD ALIGN="LEFT">JobController</TD></TR>
+      <TR><TD ALIGN="LEFT">ApplicationController</TD></TR>
+      <TR><TD ALIGN="LEFT">JobSeekerProfileController</TD></TR>
+      <TR><TD ALIGN="LEFT">EmployerProfileController</TD></TR>
+      <TR><TD ALIGN="LEFT">ResumeController</TD></TR>
+      <TR><TD ALIGN="LEFT">HealthController</TD></TR>
+    </TABLE>
+  >];
+
+  services [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#16a34a">
+      <TR><TD BGCOLOR="#dcfce7"><B>Services</B></TD></TR>
+      <TR><TD ALIGN="LEFT">UserService</TD></TR>
+      <TR><TD ALIGN="LEFT">JobService</TD></TR>
+      <TR><TD ALIGN="LEFT">ApplicationService</TD></TR>
+    </TABLE>
+  >];
+
+  repos [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#ea580c">
+      <TR><TD BGCOLOR="#ffedd5"><B>Repositories</B></TD></TR>
+      <TR><TD ALIGN="LEFT">UserRepository</TD></TR>
+      <TR><TD ALIGN="LEFT">JobRepository</TD></TR>
+      <TR><TD ALIGN="LEFT">ApplicationRepository</TD></TR>
+      <TR><TD ALIGN="LEFT">JobSeekerProfileRepository</TD></TR>
+      <TR><TD ALIGN="LEFT">EmployerProfileRepository</TD></TR>
+    </TABLE>
+  >];
+
+  security [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#dc2626">
+      <TR><TD BGCOLOR="#fee2e2"><B>Security</B></TD></TR>
+      <TR><TD ALIGN="LEFT">SecurityConfig</TD></TR>
+      <TR><TD ALIGN="LEFT">JwtAuthenticationFilter</TD></TR>
+      <TR><TD ALIGN="LEFT">JwtService</TD></TR>
+      <TR><TD ALIGN="LEFT">CustomUserDetailsService</TD></TR>
+      <TR><TD ALIGN="LEFT">BCryptPasswordEncoder</TD></TR>
+    </TABLE>
+  >];
+
+  tests [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#0f766e">
+      <TR><TD BGCOLOR="#ccfbf1"><B>Service Tests</B></TD></TR>
+      <TR><TD ALIGN="LEFT">ApplicationServiceTest</TD></TR>
+      <TR><TD ALIGN="LEFT">JobServiceTest</TD></TR>
+      <TR><TD ALIGN="LEFT">UserServiceTest</TD></TR>
+    </TABLE>
+  >];
+
+  controllers -> services [label="calls business logic"];
+  services -> repos [label="data access"];
+  repos -> entities [label="JPA entities"];
+  security -> controllers [label="JWT + authorization"];
+  tests -> services [label="unit tests / Mockito"];
+}

@@ -1,0 +1,36 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad=0.25, nodesep=0.5, ranksep=0.8, fontname="Arial", label="JOB PORTAL — AS-BUILT SYSTEM ARCHITECTURE", labelloc=t, fontsize=22];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=12, margin="0.18,0.12", color="#1f4e79", fillcolor="#eaf3f8"];
+  edge [fontname="Arial", fontsize=10, color="#444444", penwidth=1.4, arrowsize=0.8];
+
+  browser [label="Web Browser\nJob Seeker / Recruiter\nDesktop or Mobile", fillcolor="#eef5fb"];
+
+  subgraph cluster_front {
+    label="FRONTEND — Render Static Site";
+    color="#5b8def"; style="rounded"; fontname="Arial"; fontsize=14;
+    frontend [label="React + Vite\n\n• Login / Registration\n• Job Search & Details\n• Job Seeker Dashboard\n• Recruiter Dashboard\n• Profiles\n• Applications & Status\n• Resume Upload", fillcolor="#f1f6ff"];
+  }
+
+  subgraph cluster_back {
+    label="BACKEND — Render Web Service";
+    color="#2e8b57"; style="rounded"; fontname="Arial"; fontsize=14;
+    backend [label="Spring Boot 4.1.0\nJava 21\n\nREST Controllers\nService Layer\nSpring Data JPA Repositories\nSpring Security + JWT\nBean Validation\nSwagger / OpenAPI", fillcolor="#eef8f0"];
+  }
+
+  subgraph cluster_db {
+    label="DATABASE — Render PostgreSQL";
+    color="#6a5acd"; style="rounded"; fontname="Arial"; fontsize=14;
+    db [label="PostgreSQL 18\n\nUsers\nJobs\nApplications\nJob Seeker Profiles\nEmployer Profiles", fillcolor="#f4f0ff"];
+  }
+
+  subgraph cluster_cicd {
+    label="DELIVERY";
+    color="#cc8a00"; style="rounded"; fontname="Arial"; fontsize=14;
+    cicd [label="GitHub Actions\n\nPush / Pull Request → Tests\nPush to main + tests pass\n→ Render Deploy Hook", fillcolor="#fff7e6"];
+  }
+
+  browser -> frontend [label="HTTPS"];
+  frontend -> backend [label="HTTPS REST API\nVITE_API_URL"];
+  backend -> db [label="JDBC / JPA"];
+  cicd -> backend [label="gated deployment"];
+}

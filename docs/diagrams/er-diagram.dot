@@ -1,0 +1,82 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad=0.25, nodesep=0.55, ranksep=0.8, fontname="Arial", label="JOB PORTAL — AS-BUILT ER DIAGRAM", labelloc=t, fontsize=22];
+  node [shape=plain, fontname="Arial"];
+  edge [fontname="Arial", fontsize=10, color="#444444", penwidth=1.4, arrowsize=0.8];
+
+  user [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#3b82f6">
+      <TR><TD BGCOLOR="#dbeafe"><B>User</B></TD></TR>
+      <TR><TD ALIGN="LEFT">PK id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">name : String</TD></TR>
+      <TR><TD ALIGN="LEFT">email : String</TD></TR>
+      <TR><TD ALIGN="LEFT">password : String</TD></TR>
+      <TR><TD ALIGN="LEFT">role : String</TD></TR>
+    </TABLE>
+  >];
+
+  seeker [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#7c3aed">
+      <TR><TD BGCOLOR="#ede9fe"><B>JobSeekerProfile</B></TD></TR>
+      <TR><TD ALIGN="LEFT">PK id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">FK user_id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">phone : String</TD></TR>
+      <TR><TD ALIGN="LEFT">location : String</TD></TR>
+      <TR><TD ALIGN="LEFT">headline : String</TD></TR>
+      <TR><TD ALIGN="LEFT">about : String</TD></TR>
+      <TR><TD ALIGN="LEFT">preferredJobRole : String</TD></TR>
+      <TR><TD ALIGN="LEFT">preferredLocation : String</TD></TR>
+      <TR><TD ALIGN="LEFT">expectedSalary : Double</TD></TR>
+      <TR><TD ALIGN="LEFT">jobType : String</TD></TR>
+      <TR><TD ALIGN="LEFT">skills : String</TD></TR>
+      <TR><TD ALIGN="LEFT">education : String</TD></TR>
+      <TR><TD ALIGN="LEFT">experience : String</TD></TR>
+      <TR><TD ALIGN="LEFT">projects : String</TD></TR>
+    </TABLE>
+  >];
+
+  employer [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#dc2626">
+      <TR><TD BGCOLOR="#fee2e2"><B>EmployerProfile</B></TD></TR>
+      <TR><TD ALIGN="LEFT">PK id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">FK user_id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">companyName : String</TD></TR>
+      <TR><TD ALIGN="LEFT">companyDescription : String</TD></TR>
+      <TR><TD ALIGN="LEFT">website : String</TD></TR>
+      <TR><TD ALIGN="LEFT">location : String</TD></TR>
+    </TABLE>
+  >];
+
+  job [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#ea580c">
+      <TR><TD BGCOLOR="#ffedd5"><B>Job</B></TD></TR>
+      <TR><TD ALIGN="LEFT">PK id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">FK recruiter_id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">title : String</TD></TR>
+      <TR><TD ALIGN="LEFT">company : String</TD></TR>
+      <TR><TD ALIGN="LEFT">location : String</TD></TR>
+      <TR><TD ALIGN="LEFT">description : String</TD></TR>
+      <TR><TD ALIGN="LEFT">salary : Double</TD></TR>
+      <TR><TD ALIGN="LEFT">jobType : String</TD></TR>
+      <TR><TD ALIGN="LEFT">experience : String</TD></TR>
+      <TR><TD ALIGN="LEFT">skills : String</TD></TR>
+      <TR><TD ALIGN="LEFT">postedDate : LocalDateTime</TD></TR>
+    </TABLE>
+  >];
+
+  app [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#16a34a">
+      <TR><TD BGCOLOR="#dcfce7"><B>Application</B></TD></TR>
+      <TR><TD ALIGN="LEFT">PK id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">resumeUrl : String</TD></TR>
+      <TR><TD ALIGN="LEFT">status : String</TD></TR>
+      <TR><TD ALIGN="LEFT">FK user_id : Long</TD></TR>
+      <TR><TD ALIGN="LEFT">FK job_id : Long</TD></TR>
+    </TABLE>
+  >];
+
+  user -> seeker   [label="1 : 1\nprofile"];
+  user -> employer [label="1 : 1\nprofile"];
+  user -> job      [label="1 : N\nrecruiter posts jobs"];
+  user -> app      [label="1 : N\napplicant submits"];
+  job  -> app      [label="1 : N\njob receives"];
+}
