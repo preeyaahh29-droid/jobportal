@@ -48,6 +48,13 @@ jobs:
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
+      - name: Basic Java lint check
+        run: |
+          if grep -RInE 'System\.out\.println|System\.err\.println' src/main/java; then
+            echo "Debug print statements found in production code."
+            exit 1
+          fi
+
       - name: Run tests
         run: ./mvnw --batch-mode clean test
   deploy:
