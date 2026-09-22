@@ -298,7 +298,7 @@ Run the complete test suite:
 
 Current test result:
 
-Tests run: 8
+Tests run: 24
 Failures: 0
 Errors: 0
 Skipped: 0
@@ -369,6 +369,24 @@ Render PostgreSQL
 
 Production database credentials and JWT secrets are supplied through deployment environment variables and are not stored in Git.
 
+## System Architecture
+
+![System Architecture](docs/diagrams/architecture-diagram.png)
+
+## Screenshots
+
+### Job Seeker Dashboard
+
+![Job Seeker Dashboard](docs/screenshots/job-seeker-dashboard.png)
+
+### Recruiter Dashboard
+
+![Recruiter Dashboard](docs/screenshots/recruiter-dashboard.png)
+
+### Job Application
+
+![Job Application](docs/screenshots/job-application.png)
+
 ## Documentation
 
 Project problem statement:
@@ -395,6 +413,17 @@ docs/	Project documentation and diagrams
 CHANGELOG.md	Project change history
 LICENSE	MIT License
 
+## Environment Variables
+
+| Variable | Description | Required |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | PostgreSQL database JDBC URL | Yes |
+| `SPRING_DATASOURCE_USERNAME` | PostgreSQL database username | Yes |
+| `SPRING_DATASOURCE_PASSWORD` | PostgreSQL database password | Yes |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | Hibernate schema management mode | Yes |
+| `JWT_SECRET` | Secret key used to sign JWT tokens | Yes |
+| `VITE_API_URL` | Backend API URL used by the React frontend | Yes |
+
 ## Development Notes
 
 Secrets and local credentials are intentionally excluded from Git using .gitignore.
@@ -406,8 +435,26 @@ src/main/resources/application.properties
 
 Use environment variables for deployed environments.
 
+## Future Enhancements
+
+- Advanced job recommendations
+- Skill-gap analysis
+- Job and recruiter verification
+- Application notifications
+- Duplicate and expired job detection
+- Advanced recruiter-candidate matching
+- Application analytics
+
+## Author / Contact
+
+**Priya B.**
+
+B.Tech Artificial Intelligence and Data Science
+
+GitHub: https://github.com/preeyaahh29-droid
+
 ## License
 
 This project is licensed under the MIT License.
 
-See LICENSE.
+See the [LICENSE](LICENSE) file for details.
