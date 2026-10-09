@@ -66,6 +66,10 @@ function App() {
   const [jobs, setJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
 
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecommendations, setLoadingRecommendations] =
+  useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [minSalary, setMinSalary] = useState("");
@@ -607,20 +611,23 @@ function App() {
      JOB DETAILS
      ========================================================= */
 
-  const handleViewJob = (job) => {
+   const handleViewJob = (job) => {
     setSelectedJob(job);
     setShowJobDetails(true);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.setTimeout(() => {
+      document
+        .getElementById("job-details-section")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 100);
   };
-
-  const closeJobDetails = () => {
-    setSelectedJob(null);
-    setShowJobDetails(false);
-  };
+    const closeJobDetails = () => {
+      setSelectedJob(null);
+       setShowJobDetails(false);
+       };
 
   /* =========================================================
      RESUME
@@ -2259,6 +2266,37 @@ function App() {
     setIsLogin(true);
   };
 
+     /* =========================================================
+     SMART JOB RECOMMENDATIONS
+     ========================================================= */
+
+     const fetchRecommendations = async (userId) => {
+       if (!userId) return;
+
+       setLoadingRecommendations(true);
+
+       try {
+         const response = await apiFetch(
+        `${API_URL}/api/recommendations/${userId}`
+         );
+
+       if (!response.ok) {
+         throw new Error("Failed to fetch job recommendations");
+       }
+
+       const data = await response.json();
+
+       setRecommendations(
+         Array.isArray(data) ? data : []
+       );
+    }  catch (error) {
+       console.error("Recommendation error:", error);
+       setRecommendations([]);
+     } finally {
+       setLoadingRecommendations(false);
+    }
+  };
+
   /* =========================================================
      LOAD DATA AFTER LOGIN
      ========================================================= */
@@ -2288,8 +2326,12 @@ function App() {
       fetchProfile(
         user.id
       );
+
+      fetchRecommendations(
+        user.id
+      );
     }
-  }, [isLoggedIn, user]);
+}, [isLoggedIn, user]);
 
   useEffect(() => {
     if (
@@ -3819,6 +3861,183 @@ function App() {
 
             </div>
 
+	                {/* =========================================================
+                SMART JOB RECOMMENDATIONS
+                ========================================================= */}
+
+            {user?.role === "JOB_SEEKER" && (
+              <section
+                style={{
+                  marginBottom: "30px",
+                }}
+              >
+                <h2
+                  style={{
+                    marginBottom: "8px",
+                  }}
+                >
+                  🎯 Recommended Jobs
+                </h2>
+
+                <p
+                  style={{
+                    marginTop: 0,
+                    color: "#64748b",
+                  }}
+                >
+                  Jobs ranked based on your skills,
+                  preferred role, location, job type
+                  and expected salary.
+                </p>
+
+                {loadingRecommendations ? (
+                  <p className="status-text">
+                    Finding your best job matches...
+                  </p>
+                ) : recommendations.length === 0 ? (
+                  <p className="status-text">
+                    No recommendations available.
+                    Complete your profile to get better
+                    recommendations.
+                  </p>
+                ) : (
+                  <div className="jobs-grid">
+                    {recommendations.map((recommendation) => (
+                      <div
+                        className="job-card"
+                        key={recommendation.jobId}
+                        style={{
+                          border:
+                            recommendation.matchScore >= 80
+                              ? "2px solid #22c55e"
+                              : recommendation.matchScore >= 60
+                              ? "2px solid #eab308"
+                              : "2px solid #94a3b8",
+                        }}
+                      >
+                        <div className="job-card-top">
+                          <div>
+                            <h3>
+                              {recommendation.title}
+                            </h3>
+
+                            <p className="company-name">
+                              🏢 {recommendation.company}
+                            </p>
+                          </div>
+
+                          <span className="job-type-badge">
+                            {recommendation.jobType ||
+                              "Full Time"}
+                          </span>
+                        </div>
+
+                        <div className="job-meta">
+                          <span>
+                            📍 {recommendation.location}
+                          </span>
+
+                          <span>
+                            🎯 {recommendation.matchScore}%
+                            Match
+                          </span>
+                        </div>
+
+                        <div className="salary">
+                          💰 ₹
+                          {Number(
+                            recommendation.salary || 0
+                          ).toLocaleString("en-IN")}
+                          {" / year"}
+                        </div>
+
+                        <p
+                          style={{
+                            fontWeight: "600",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          {recommendation.matchLabel}
+                        </p>
+
+                        {recommendation.matchedSkills?.length >
+                          0 && (
+                          <div>
+                            <strong>
+                              ✅ Matched Skills
+                            </strong>
+
+                            <div
+                              className="skills"
+                              style={{
+                                marginTop: "8px",
+                              }}
+                            >
+                              {recommendation.matchedSkills.map(
+                                (skill, index) => (
+                                  <span key={index}>
+                                    {skill}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {recommendation.missingSkills?.length >
+                          0 && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                            }}
+                          >
+                            <strong>
+                              ⚠️ Skills to Improve
+                            </strong>
+
+                            <div
+                              className="skills"
+                              style={{
+                                marginTop: "8px",
+                              }}
+                            >
+                              {recommendation.missingSkills.map(
+                                (skill, index) => (
+                                  <span key={index}>
+                                    {skill}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          className="primary-btn"
+                          style={{
+                            marginTop: "15px",
+                          }}
+                          onClick={() => {
+                            const originalJob =
+                              jobs.find(
+                                (job) =>
+                                  job.id ===
+                                  recommendation.jobId
+                              );
+
+                            if (originalJob) {
+                              handleViewJob(originalJob);
+                            }
+                          }}
+                        >
+                          View Job
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
             {!loadingJobs &&
               jobs.length >
                 0 && (
@@ -4009,7 +4228,8 @@ function App() {
 
           {showJobDetails &&
             selectedJob && (
-              <div className="jobs-section">
+              <div className="jobs-section" id="job-details-section">
+
 
                 <div className="section-header">
 
