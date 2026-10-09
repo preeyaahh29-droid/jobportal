@@ -186,6 +186,14 @@ public class SecurityConfig {
                                 "/api/applications"
                         ).hasRole("RECRUITER")
 
+			// =================================================
+                        // SMART JOB RECOMMENDATIONS
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/recommendations/**"
+                        ).hasRole("JOB_SEEKER")
 
                         // =================================================
                         // JOB SEEKER PROFILE
@@ -207,9 +215,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/employer/**"
                         ).hasRole("RECRUITER")
-                        
 
-			
+
+
 			// =================================================
 			// SWAGGER / OPENAPI
 			// =================================================
