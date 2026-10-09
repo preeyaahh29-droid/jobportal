@@ -1,8 +1,14 @@
+
 package com.jobportal.jobportal.controller;
 
 import com.jobportal.jobportal.dto.JobRecommendation;
+import com.jobportal.jobportal.entity.User;
+import com.jobportal.jobportal.repository.UserRepository;
 import com.jobportal.jobportal.service.RecommendationService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -15,26 +21,46 @@ import java.util.List;
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
+    private final UserRepository userRepository;
 
     /**
      * Creates the recommendation controller.
      *
      * @param recommendationService service for generating recommendations
+     * @param userRepository repository for looking up users
      */
     public RecommendationController(
-            RecommendationService recommendationService) {
+            RecommendationService recommendationService,
+            UserRepository userRepository) {
         this.recommendationService = recommendationService;
+        this.userRepository = userRepository;
     }
 
     /**
-     * Returns ranked job recommendations for a job seeker.
+     * Returns ranked recommendations for the authenticated job seeker.
      *
-     * @param userId job seeker's user ID
+     * @param userId requested job seeker's user ID
+     * @param authentication authenticated security context
      * @return top five recommended jobs
      */
     @GetMapping("/{userId}")
     public List<JobRecommendation> getRecommendations(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            Authentication authentication) {
+
+        User authenticatedUser = userRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Authenticated user not found"
+                ));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only view your own recommendations"
+            );
+        }
 
         return recommendationService.getRecommendations(userId);
     }

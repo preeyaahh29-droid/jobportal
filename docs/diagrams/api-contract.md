@@ -132,6 +132,23 @@ POST	/api/resumes/upload	Authenticated	Upload resume
 
 GET	/api/resumes/view/{fileName}	Authenticated	View resume
 
+
+
+## Smart Job Recommendations
+
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/recommendations/{userId}` | Job Seeker (JWT required; own user ID only) | Retrieve the top five ranked job recommendations for the authenticated Job Seeker. |
+
+Recommendations consider skill matches, preferred role, location, job type, and salary. The response includes match scores, matched skills, and missing skills.
+
+### Authorization
+
+- Requests require JWT authentication and the `JOB_SEEKER` role.
+- A Job Seeker can request recommendations only for their own user ID.
+- Requests for another user's recommendations are rejected with `403 Forbidden`.
+
+
 API Documentation
 
 

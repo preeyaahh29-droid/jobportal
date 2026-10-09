@@ -2,6 +2,31 @@
 
 All notable changes to the JobPortal project are documented here.
 
+## [Review-III / Smart Job Recommendations] - 2026-10-09
+
+### Added
+
+* Added `RecommendationController` and `RecommendationService` for smart job recommendations.
+* Added `GET /api/recommendations/{userId}` to retrieve up to five ranked job recommendations.
+* Added recommendation scoring based on skills, preferred role, location, job type, and salary.
+* Added matched-skill and missing-skill details to recommendation results.
+* Added unit tests specifically for the recommendation service.
+* Added the Smart Job Recommendations section to the Job Seeker dashboard.
+
+### Changed
+
+* Updated the architecture diagram to include the recommendation service and its integration.
+* Updated the API contract with the recommendations endpoint.
+* Updated README v3 with the enhancement, live application links, architecture, setup instructions, testing, and deployment information.
+
+### Validation
+
+* Backend tests passed locally: 28 tests, 0 failures, 0 errors, and 0 skipped.
+* Frontend production build completed successfully.
+* Merged the enhancement into `main` through Pull Request #1.
+* Verified that Smart Job Recommendations works on the live application.
+
+
 ## [Review-II / Full Product, Live] - 2026-09-21
 
 ### Added
