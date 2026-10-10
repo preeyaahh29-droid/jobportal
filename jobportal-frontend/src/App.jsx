@@ -3524,7 +3524,9 @@ function App() {
                             Email:
                           </strong>{" "}
                           {
-                            application.applicantEmail
+                             application.applicantEmail ||
+                             application.applicant?.email ||
+                             "Email unavailable"
                           }
                         </p>
 
